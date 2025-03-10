@@ -1,0 +1,299 @@
+# Pipeline file structure: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
+# Task List: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks
+
+name: "2.0$(rev:.r)"
+
+resources:
+  - repo : self
+
+trigger:
+   batch: true
+   branches:
+    include:
+      - /*
+   paths :
+    include:
+    - src/ARM/Infrastructure/afd/afd_final/*
+variables:
+ - group: "AMN_IPS_INFRA"
+
+stages:
+# ==========================================================================================================================================
+- stage : Build
+  jobs:
+  - template : /Azure-pipelines/build-steps.yml
+
+# ==========================================================================================================================================
+- stage : TEST
+  displayName: TEST
+  dependsOn: Build
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/TEST_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : DEV
+  displayName: DEV
+  dependsOn: TEST
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/DEV_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : QA
+  displayName: QA
+  dependsOn: DEV
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/QA_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : INT
+  displayName: INT
+  dependsOn: QA
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/INT_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : PROD
+  displayName: PROD
+  dependsOn: INT
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/PROD_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : TEAM_A
+  displayName: TEAM_A
+  dependsOn: TEST
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_A_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : TEAM_B
+  displayName: TEAM_B
+  dependsOn: TEST
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_B_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : TEAM_C
+  displayName: TEAM_C
+  dependsOn: TEST
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_C_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : TEAM_D
+  displayName: TEAM_D
+  dependsOn: TEST
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_D_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : TEAM_E
+  displayName: TEAM_E
+  dependsOn: TEST
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_E_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}
+
+# ==========================================================================================================================================
+- stage : TRAIN
+  displayName: TRAIN
+  dependsOn: TEST
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/TRAIN_variables.yaml
+  jobs :
+  - deployment: afdDeployment
+    displayName: Deploying AFD
+    workspace:
+      clean: all 
+    environment :  ${{ variables.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'afd/afd_final'
+               resource_template_name : 'afd_final.template.json'
+               resource_param_name : 'afd_final.parameters.json'
+               environment : ${{ variables.environment }}
+               Azure_Resource_Manager_connection : ${{ variables.Azure_Resource_Manager_connection }}

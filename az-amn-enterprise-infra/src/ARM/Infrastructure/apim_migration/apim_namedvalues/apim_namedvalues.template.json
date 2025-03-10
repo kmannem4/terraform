@@ -1,0 +1,61 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "type": "string"
+        },
+        "ttmRateLimitCalls": {
+            "type": "int"
+        },
+        "ttmRateLimitEnabled": {
+            "type": "bool"
+        },
+        "IDP_url": {
+            "type": "string"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2023-05-01-preview",
+            "name": "[concat(parameters('apimname'), '/ttm-rate-limit-enabled')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "displayName": "ttm-rate-limit-enabled",
+                "value": "[parameters('ttmRateLimitEnabled')]",
+                "tags": [],
+                "secret": false
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2023-05-01-preview",
+            "name": "[concat(parameters('apimname'), '/ttm-rate-limit-calls')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "displayName": "ttm-rate-limit-calls",
+                "value": "[parameters('ttmRateLimitCalls')]",
+                "tags": [],
+                "secret": false
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2023-05-01-preview",
+            "name": "[concat(parameters('apimname'), '/ttm-identity-provider-is4-com-url')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "displayName": "ttm-identity-provider-is4-url",
+                "value": "[parameters('IDP_url')]",
+                "tags": [],
+                "secret": false
+            }
+        }
+    ]
+}

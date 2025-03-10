@@ -1,0 +1,114 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "privateDnsZones_name": {
+            "value": "dev.amnhealthcare.io"
+        },
+        "environment": {
+            "value": "TEAM-D"
+        },
+        "atsdns": {
+            "value": "td-ats-api"
+        },
+        "apidns": {
+            "value": "td-api"
+        },
+        "api_developer_dns": {
+            "value": "td-api-developer"
+        },
+        "api_management_dns": {
+            "value": "td-api-management"
+        },
+        "vmsdns": {
+            "value": "td-vms-api"
+        },
+        "amnone-ic-dns": {
+            "value": "td-amnone-ic"
+        },
+        "amnone-ic-IpAddress": {
+            "value": "11.82.1.55"
+        },
+        "imatch-dns": {
+            "value": "td-imatch"
+        },
+        "Imatch-IpAddress": {
+            "value": "10.98.176.17"
+        },
+        "api_public_DNSzone": {
+            "value": "td-api.dev.amnhealthcare.io"
+        },
+        "AMN_HUB_APIM_ResourceGroup": {
+            "value": "amn-wus2-hub-rg-td01"
+        },
+        "apimname": {
+            "value": "amn-wus2-hub-apim-td01"
+        },
+        "AMN_HUB_subscriptionId": {
+            "value": "e764d23e-759d-4cd4-8b5f-27e4c703f6a8"
+        },
+        "AMN_HUB_serverFarmResourceGroup": {
+            "value": "amn-wus2-hub-rg-td01"
+        },
+        "AMN_HUB_virtualNetworkName": {
+            "value": "amn-wus2-hub-vnet-td01"
+        },
+        "AMN_HUB_virtualNetworkName_link": {
+            "value": "amn-wus2-hub-vnet-td01-link"
+        },
+        "AMN_TTM_subscriptionId": {
+            "value": "95181a59-30e2-4faf-b8c7-993d85a7e640"
+        },
+        "AMN_TTM_serverFarmResourceGroup": {
+            "value": "amn-wus2-ttm-rg-td01"
+        },
+        "AMN_TTM_virtualNetworkName": {
+            "value": "amn-wus2-ttm-vnet-td01"
+        },
+        "AMN_TTM_virtualNetworkName_link": {
+            "value": "amn-wus2-ttm-vnet-td01-link"
+        },
+        "AMN_amnonestaffing_subscriptionId": {
+            "value": "de714383-62fd-47f3-a8d5-440d93cd87db"
+        },
+        "AMN_match_subscriptionID": {
+            "value": "26db258e-74b5-463c-9bff-5ff45578ed9d"
+        },
+        "AMN_amnonekub_serverFarmResourceGroup": {
+            "value": "co-wus2-amnonekub-rg-td01"
+        },
+        "AMN_amnonekub_virtualNetworkName": {
+            "value": "co-wus2-amnonekub-vnet-td01"
+        },
+        "AMN_amnonekub_virtualNetworkName_link": {
+            "value": "co-wus2-amnonekub-vnet-td01-link"
+        },
+        "AMN_floatpool_serverFarmResourceGroup": {
+            "value": "co-wus2-floatpool-rg-td01"
+        },
+        "AMN_floatpool_virtualNetworkName": {
+            "value": "co-wus2-floatpool-vnet-td01"
+        },
+        "AMN_floatpool_virtualNetworkName_link": {
+            "value": "co-wus2-floatpool-vnet-td01-link"
+        },
+        "AMN_amnonematch_serverFarmResourceGroup": {
+            "value": "co-wus2-imatch-rg-td01"
+        },
+        "AMN_amnonematch_virtualNetworkName": {
+            "value": "co-wus2-imatch-vnet-td01"
+        },
+        "AMN_amnonematch_virtualNetworkName_link": {
+            "value": "co-wus2-imatch-vnet-td01-link"
+        },
+        "AMN_amnoneshared_serverFarmResourceGroup": {
+            "value": "co-wus2-amnoneshared-rg-td01"
+        },
+        "AMN_amnoneshared_virtualNetworkName": {
+            "value": "co-wus2-amnoneshared-vnet-td01"
+        },
+        "AMN_amnoneshared_virtualNetworkName_link": {
+            "value": "co-wus2-amnoneshared-vnet-td01-link"
+        }
+    }
+}

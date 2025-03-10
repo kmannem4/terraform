@@ -1,0 +1,90 @@
+parameters:
+- name: workingDirectory
+  type: string
+
+- name: environment
+  type: string
+  values:
+    - dev
+    - prod
+
+- name: varFilePath
+  type: string
+
+- name: vertical
+  type: string
+
+- name: deploymentGroup
+  type: string
+
+- name: terraformVersion
+  type: string
+  default: "1.3.9"
+
+- name: disableApply
+  type: boolean
+  default: false  
+
+stages:
+  - stage: "Plan_${{ lower(parameters.environment) }}"
+    displayName: "Plan ${{ lower(parameters.environment) }}"
+    dependsOn: []
+    pool:
+      name: generic_build_vmss-linux 
+    variables:
+    - template: ../variables/terraform.yml
+    - group: "cloud-automation-${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}"
+    jobs:
+    - job: install unzip
+      steps:
+      - bash: |
+          which bash
+          echo Hello $name
+        displayName: Multiline Bash script
+    - job: Plan_Configuration
+      displayName: "Plan Configuration"
+      steps:     
+      - task: TerraformInstaller@0
+        displayName: 'Terraform Install'
+        inputs:
+          terraformVersion: latest
+      - task: TerraformTaskV2@2
+        displayName: 'Terraform Init'
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          backendServiceArm: 'AMN_CloudOps_TF_IAC'
+          backendAzureRmResourceGroupName: ${{ variables.backendResourceGroup }}
+          backendAzureRmStorageAccountName: ${{ variables.backendStorageAccount }}
+          backendAzureRmContainerName: ${{ lower(parameters.vertical) }}
+          backendAzureRmKey: "${{ parameters.vertical }}-${{ lower(parameters.environment) }}.tfstate"
+          workingDirectory: ${{ parameters.workingDirectory }}
+      - task: TerraformTaskV2@2
+        displayName: 'Terraform Validate'
+        inputs:
+          provider: 'azurerm'
+          command: 'validate'
+      - task: CmdLine@2
+        displayName: 'List workingDirectory'
+        inputs:
+          script: |
+            pwd
+            echo $(System.DefaultWorkingDirectory)
+            echo ${{ lower(parameters.vertical) }}
+            cat $(System.DefaultWorkingDirectory)/${{ lower(parameters.vertical) }}/${{ parameters.varFilePath }}
+      - task: TerraformTaskV2@2
+        displayName: 'Terraform Plan'
+        inputs:
+          provider: 'azurerm'
+          command: 'plan'
+          commandOptions: '-out=tfplan -var-file="$(System.DefaultWorkingDirectory)/${{ lower(parameters.vertical) }}/${{ parameters.varFilePath }}"'
+          workingDirectory: ${{ parameters.workingDirectory }}
+          environmentServiceNameAzureRM: 'AMN_CloudOps_TF_IAC'
+      - task: TerraformTaskV2@2
+        displayName: 'Terraform Apply'
+        inputs:
+          provider: 'azurerm'
+          command: 'apply'
+          commandOptions: '-var-file="$(System.DefaultWorkingDirectory)/${{ lower(parameters.vertical) }}/${{ parameters.varFilePath }}"'
+          environmentServiceNameAzureRM: 'AMN_CloudOps_TF_IAC'
+          workingDirectory: ${{ parameters.workingDirectory }}

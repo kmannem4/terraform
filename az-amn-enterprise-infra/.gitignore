@@ -1,0 +1,4 @@
+/.vs
+*.user
+*.cache
+deploy.ps1

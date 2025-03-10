@@ -1,0 +1,5 @@
+variables:
+  - name: backendServiceAWS
+    value: AMNAWSTFAutomation_master_dev
+  - name: backendS3Account
+    value: coeus1tfstates3d01

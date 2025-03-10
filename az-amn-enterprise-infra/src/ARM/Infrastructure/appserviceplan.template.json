@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "AppService_Plan_Name": {
+            "type": "String"
+        },
+        "location" : {
+            "type": "string"
+        },
+        "sku": {
+        "type": "string"
+        },
+        "skucode": {
+        "type": "string"
+        },
+        "kind": {
+        "type" : "string"
+        },
+        "tagsArray": {
+        "type": "object"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('AppService_Plan_Name')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('tagsArray')]",
+            "kind": "[parameters('kind')]",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            },
+            "sku": {
+                "Tier": "[parameters('sku')]",
+                "Name": "[parameters('skuCode')]"
+            }
+        }
+    ]
+}

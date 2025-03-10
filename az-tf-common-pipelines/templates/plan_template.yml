@@ -1,0 +1,167 @@
+parameters:
+- name: StageName 
+  type: string
+  default: ''
+
+- name: PoolName
+  type: string
+
+- name : serviceConnection
+  type: string
+  default: ''
+
+- name: backendResourceGroup
+  type: string
+
+- name: subscription_id
+  type: string
+
+- name: backendStorageAccount
+  type: string
+
+- name: vertical
+  type: string
+
+- name: environment
+  type: string
+
+- name: resourceFile
+  type: string
+
+- name: terraformVersion
+  type: string
+  default: "1.8.5"
+
+- name: Enabled
+  type: boolean
+  default: true
+
+- name: Terraform_VG
+  type: string
+  
+stages:
+- stage: ${{ parameters.StageName }}_Plan
+  displayName: "Terraform_Plan_${{ lower(parameters.environment) }}"
+  variables:
+    - group: ${{ parameters.Terraform_VG }}
+  condition: and(succeeded(),  eq('${{ parameters.Enabled }}', true) )
+  dependsOn: 'Build'
+  pool:
+    ${{ if ne(parameters.PoolName, '') }}:
+      name: ${{ parameters.PoolName }}
+    ${{ else }}:
+      name: "Azure Pipelines"
+  jobs:
+  - job: Plan_Configuration
+    displayName: "Plan Configuration"
+    steps:
+    - checkout: self
+      clean: true
+    - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+      displayName: "Terraform Install"
+      inputs:
+        terraformVersion: ${{ parameters.terraformVersion }}
+
+    - script: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        az --version
+      displayName: "Install Azure CLI"
+
+    - task: AzureCLI@2
+      displayName: "Terraform Init"
+      inputs:
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          # Verify the backend configuration
+          echo "Verify the backend configuration"
+          echo "Using backend storage account: ${{ parameters.backendStorageAccount }}"
+          echo "Using backend resource group: ${{ parameters.backendResourceGroup }}"
+          echo "Using backend container name: ${{ lower(parameters.vertical) }}"
+          echo "Using backend key: ${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}.tfstate"
+          echo "Using Azure subscription: ${{ parameters.subscription_id }}"
+          # Set the Terraform backend configuration
+
+          az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
+
+          echo "Az login success"
+
+          #Generate access token for ado
+          token=$(az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken --output tsv)
+
+          echo "token generated $token"
+          export GIT_CONFIG_PARAMETERS="'url.https://$token@dev.azure.com.insteadof=https://AMNEngineering@dev.azure.com'"
+          
+          echo "export git config values"
+
+          # Initialize Terraform
+          terraform init \
+            -backend-config="storage_account_name=${{ parameters.backendStorageAccount }}" \
+            -backend-config="container_name=${{ lower(parameters.vertical) }}" \
+            -backend-config="key=${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}.tfstate" \
+            -backend-config="resource_group_name=${{ parameters.backendResourceGroup }}" \
+            -backend-config="subscription_id=${{ parameters.subscription_id }}"
+        azureSubscription: "${{ parameters.serviceConnection }}"
+        workingDirectory:  "$(System.DefaultWorkingDirectory)/infrastructure/"
+      env:
+        ARM_CLIENT_ID: $(CLIENT-ID)
+        ARM_CLIENT_SECRET: $(CLIENT-SECRET)
+        ARM_TENANT_ID: $(TENANT-ID)
+
+    - task: TerraformTaskV4@4
+      displayName: "Terraform Validate"
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+        workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+
+    - task: CmdLine@2
+      displayName: "List workingDirectory"
+      inputs:
+        script: |
+          pwd
+          echo $(System.DefaultWorkingDirectory)
+          echo ${{ lower(parameters.vertical) }}
+          ls -ltr
+          cat $(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}
+    
+    - task: TerraformTaskV4@4
+      displayName: "Terraform Plan"
+      name: TerraformPlan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        commandOptions: '-input=false -var-file="$(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}" -out=$(System.DefaultWorkingDirectory)/infrastructure/${{parameters.environment}}_plan -detailed-exitcode'
+        environmentServiceNameAzureRM: '${{ parameters.serviceConnection }}'
+        workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+
+    - task: TerraformTaskV4@4
+      name: TerraformShow
+      displayName: Terraform Show
+      inputs:
+        provider: 'azurerm'
+        environmentServiceNameAzureRM: '${{ parameters.serviceConnection }}'
+        command: 'show'
+        commandOptions: '${{parameters.environment}}_plan -no-color'
+        outputTo: 'file'
+        outputFormat: 'default'
+        fileName: '$(System.DefaultWorkingDirectory)/infrastructure/${{parameters.environment}}_plan.md'
+        workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+
+    # Display plan in the pipeline build summary
+    - task: Bash@3
+      displayName: Show plan summary
+      inputs:
+        targetType: 'inline'
+        workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+        script: |
+          ls -la
+          sed -i '1 i\```' ${{parameters.environment}}_plan.md
+          echo '```' >> ${{parameters.environment}}_plan.md
+          echo "##vso[task.uploadsummary]$(System.DefaultWorkingDirectory)/infrastructure/${{parameters.environment}}_plan.md"
+        
+    - task: DeleteFiles@1
+      displayName: "Remove unneeded files"
+      inputs:
+        contents: |
+          .terraform

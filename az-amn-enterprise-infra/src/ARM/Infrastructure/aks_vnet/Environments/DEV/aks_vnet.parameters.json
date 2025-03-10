@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "product": "Platform Services",
+        "managed-by": "cloud.engineers@amnhealthcare.com",
+        "environment": "dev"
+      }
+    },
+    "location": {
+      "value": "West US 2"
+    },
+    "vnetSettings": {
+      "value": {
+        "name": "amn-wus2-infrahub-vnet-d01",
+        "addressSpace": "10.86.0.0/16",
+        "appTierSubnetAddessPrefix": "10.86.0.0/20",
+        "appTierSubnetName": "hub-aks-dev"
+      }
+    }
+}
+}

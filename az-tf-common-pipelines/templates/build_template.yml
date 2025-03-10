@@ -1,0 +1,88 @@
+parameters:
+- name: StageName 
+  type: string
+  default: ''
+- name: PoolName
+  #default: 'generic_build_vmss-linux'
+  type: string
+- name: Terraform_VG
+  type: string
+- name: serviceConnection
+  type: string
+
+stages:
+- stage: ${{ parameters.StageName }}
+  displayName: "Checkov - Scan Terraform Code"
+  variables:
+   - group: ${{ parameters.Terraform_VG }}
+  pool:
+    ${{ if ne(parameters.PoolName, '') }}:
+      name: ${{ parameters.PoolName }}
+    ${{ else }}:
+      name: "Azure Pipelines"
+  jobs:
+    - job: "runCheckov"
+      displayName: "Checkov > Pull, Scan & Publish Scan Report"
+      steps:
+        - checkout: self
+          clean: true
+        - script: |
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+            sudo apt update
+            sudo apt install -y docker-ce docker-ce-cli containerd.io
+            curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          displayName: 'Install Docker and AZcli'
+
+        - bash: |
+              sudo docker pull docker.io/bridgecrew/checkov:latest
+          workingDirectory: $(System.DefaultWorkingDirectory)
+          displayName: "Pull > bridgecrew/checkov"
+
+        # Add the current user to the Docker group
+        - script: |
+            sudo usermod -aG docker $(whoami)
+            sudo chmod 666 /var/run/docker.sock
+            # Restart Docker to apply the changes
+            sudo systemctl restart docker
+          displayName: 'Grant Docker Access and Restart Docker' 
+
+        - task: AzureCLI@2
+          displayName: "Run > checkov"
+          inputs:
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              # AZ login with service principal
+              az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
+              
+              #Generate access token for ado
+              token=$(az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken --output tsv)
+              echo "token generated $token"
+
+              export ADO_PAT=$token
+              docker run --volume $(pwd):/tf --env GIT_CONFIG_PARAMETERS="'url.https://$ADO_PAT@dev.azure.com.insteadof=https://AMNEngineering@dev.azure.com'" bridgecrew/checkov --framework terraform --download-external-modules true --external-modules-download-path /tf --directory /tf --output junitxml --soft-fail > $(pwd)/TEST-CheckovReport.xml
+
+              sudo rm -rf dev.azure.com/
+            azureSubscription: "${{ parameters.serviceConnection }}"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+          env:
+            ARM_CLIENT_ID: $(CLIENT-ID)
+            ARM_CLIENT_SECRET: $(CLIENT-SECRET)
+            ARM_TENANT_ID: $(TENANT-ID)
+
+        - task: PublishTestResults@2
+          displayName: "Publish > Checkov Scan Report"
+          condition: succeededOrFailed()
+          inputs:
+            testRunTitle: "Checkov Results"
+            failTaskOnFailedTests: false
+            mergeTestResults: false
+            publishRunAttachments: true
+            testResultsFormat: "JUnit"
+            testResultsFiles: "**/TEST-*.xml"
+            searchFolder: "$(System.DefaultWorkingDirectory)" 
+        
+        - script: |
+            sudo rm -rf $(System.DefaultWorkingDirectory)/TEST-CheckovReport.xml
+          displayName: 'Remove Checkov Report'

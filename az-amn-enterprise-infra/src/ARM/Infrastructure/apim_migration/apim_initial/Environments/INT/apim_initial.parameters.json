@@ -1,0 +1,45 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "value": "amn-wus2-hub-apim-i02"
+        },
+        "environment": {
+            "value": "INT"
+        },
+        "apim_platformVersion": {
+            "value": "stv2"
+        },
+        "AMN_HUB_serverFarmResourceGroup": {
+            "value": "amn-wus2-hub-rg-p01"
+        },
+        "AMN_HUB_KeyVaultName": {
+            "value": "amn-wus2-hub-kv-p01"
+        },
+        "location": {
+            "value": "westus2"
+        },
+        "additionallocation": {
+            "value": "westcentralus"
+        },
+        "adminEmail": {
+            "value": "Karthik.Mannem@shiftwise.com"
+        },
+        "orgName": {
+            "value": "amnhealthcare"
+        },
+        "tier": {
+            "value": "Premium"
+        },
+        "loggerName": {
+            "value": "amn-wus2-hub-appinsights-i01"
+        },
+        "appinsightsname": {
+            "value": "amn-wus2-hub-appinsights-i01"
+        },
+        "capacity": {
+            "value": 1
+        }
+    }
+}

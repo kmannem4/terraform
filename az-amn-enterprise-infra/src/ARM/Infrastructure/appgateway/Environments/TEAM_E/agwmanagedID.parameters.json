@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "userAssignedIdentities_name": {
+      "value": "amn-wus2-hub-agw-mgid-te01"
+    },
+    "AMN_HUB_keyvault_ResourceGroup": {
+      "value": "amn-wus2-hub-rg-d01"
+    },
+    "AMN_HUB_KeyVaultName": {
+      "value": "amn-wus2-hub-kv-d01"
+    },
+    "location": {
+      "value": "westus2"
+    },
+    "tagsArray": {
+      "value": {
+        "role": "infrastructure",
+        "environment": "Team-E"
+      }
+    }
+  }
+}

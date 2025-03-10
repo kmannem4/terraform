@@ -1,0 +1,51 @@
+name: '1.0$(rev:.r)'
+
+resources:
+  repositories:
+    - repository: amn-az-tf-common-pipelines
+      type: git
+      name: "Terraform/amn-az-tf-common-pipelines"
+    - repository: amn-az-tfm-resourcegroup
+      type: git
+      name: "Terraform/amn-az-tfm-resourcegroup"
+    - repository: amn-az-tfm-user-assigned-identity
+      type: git
+      name: "Terraform/amn-az-tfm-user-assigned-identity"
+    - repository: amn-az-tfm-virtual-network
+      type: git
+      name: "Terraform/amn-az-tfm-virtual-network"
+
+variables:
+  - name: moduleHeader
+    value: "Terraform module to create AKS Cluster resource in Azure."
+    
+  - name: exampleScenario
+    value: "Create public AKS cluster with RBAC diabled and log analytics workspace not configured. <br /><br /> The following steps in example to using this module:<br /> - Create resource group<br /> - Create virtual network<br />- Create user assigned Identity<br /> - Create AKS cluster"
+
+  - template: variables/az-tf-module-common-variables.yaml@amn-az-tf-common-pipelines
+    parameters:
+      repoName: amn-az-tfm-aks
+
+trigger:
+  - none
+
+stages:
+- template: templates/az-tf-module-pr-template.yaml@amn-az-tf-common-pipelines
+  parameters:
+    WorkingDirectory: $(workingDirectory)
+    ServiceArm: $(ServiceArm)
+    VarFilePath: '"$(workingDirectory)/$(environment)".tfvars'
+    TestDirectory: 'tests/apply_validation_tests'
+    PoolName: 'shac_linux_infra'
+    DependentRepositories:
+     - "amn-az-tfm-resourcegroup"
+     - "amn-az-tfm-virtual-network"
+     - "amn-az-tfm-user-assigned-identity"
+
+- stage: RaisePR
+  displayName: 'Raise PR to Default Branch'
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - template: templates/readme-pr-template.yaml@amn-az-tf-common-pipelines
+    parameters:
+      TARGET_BRANCH_NAME: 'main'  # Replace with your default branch

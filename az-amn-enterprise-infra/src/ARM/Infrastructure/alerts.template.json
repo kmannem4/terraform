@@ -1,0 +1,1043 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environmentName": {
+            "type": "string",
+            "allowedValues": [
+                "test",
+                "int",
+                "prod"
+            ],
+            "metadata": {
+                "description": "Allowed values for the environmentName parameter value: test, int, or prod."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "global"
+        }
+    },
+    "variables": {
+        "environmentSettings": {
+            "test": {
+                "alertsEnabled": false,
+                "actionGroupsEnabled": false,                
+                "environmentLetter": "t",
+                "ApimServiceName": "amn-wus2-hub-apim-t01",                
+                "frontDoorsName": "amn-wus2-hub-afd-t01",
+                "appGatewayName": "amn-wus2-hub-agw-t01",
+                "appInsightsName": "amn-wus2-hub-appinsights-t01",
+                "vmsApiUrlForWebTest": "https://api.test.ttm.amnhealthcare.com/status-0123456789abcdef",
+                "atsApiUrlForWebTest": "https://ats-api.test.amnhealthcare.io/status-0123456789abcdef",
+                "apimLocations": [
+                    "West US 2",
+                    "West Central US"                    
+                ],                
+                "tags": {
+                    "charge-to": "101-71200-5000-9500",
+                    "role": "infrastructure",
+                    "environment": "test"
+                },
+                "actionGroups": {
+                    "sev0": {
+                        "emailReceivers": [
+                            {
+                                "name": "Serguei_Komarov-EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Harshith_Vangaveti_EmailAction",
+                                "emailAddress": "harshith.vangaveti@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Karthik_Mannem_EmailAction",
+                                "emailAddress": "Karthik.Mannem@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                                                          
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": []
+                    },
+                    "sev1_2": {
+                        "emailReceivers": [
+                            {
+                                "name": "Serguei_Komarov-EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Harshith_Vangaveti_EmailAction",
+                                "emailAddress": "harshith.vangaveti@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Karthik_Mannem_EmailAction",
+                                "emailAddress": "Karthik.Mannem@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                                                        
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": []
+                    },
+                    "sev3_4": {
+                        "emailReceivers": [
+                            {
+                                "name": "Serguei_Komarov-EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Harshith_Vangaveti_EmailAction",
+                                "emailAddress": "harshith.vangaveti@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Karthik_Mannem_EmailAction",
+                                "emailAddress": "Karthik.Mannem@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                                                          
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": []
+                    }
+                }
+            },
+            "int": {
+                "alertsEnabled": false,
+                "actionGroupsEnabled": false,                
+                "environmentLetter": "i",
+                "ApimServiceName": "amn-wus2-hub-apim-i01",                
+                "frontDoorsName": "amn-wus2-hub-afd-i01",
+                "appGatewayName": "amn-wus2-hub-agw-i01",
+                "appInsightsName": "amn-wus2-hub-appinsights-i01",
+                "vmsApiUrlForWebTest": "https://api.int.ttm.amnhealthcare.com/status-0123456789abcdef",
+                "atsApiUrlForWebTest": "https://ats-api.int.amnhealthcare.io/status-0123456789abcdef",
+                "apimLocations": [
+                    "West US 2",
+                    "West Central US"
+                ],                
+                "tags": {
+                    "charge-to": "101-71200-5000-9500",
+                    "role": "infrastructure",
+                    "environment": "int"
+                },
+                "actionGroups": {
+                    "sev0": {
+                        "emailReceivers": [
+                            {
+                                "name": "Serguei_Komarov-EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Harshith_Vangaveti_EmailAction",
+                                "emailAddress": "harshith.vangaveti@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Karthik_Mannem_EmailAction",
+                                "emailAddress": "Karthik.Mannem@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Bart_Elia_EmailAction",
+                                "emailAddress": "bart.elia@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                                                                                        
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": []
+                    },
+                    "sev1_2": {
+                        "emailReceivers": [
+                            {
+                                "name": "Serguei_Komarov-EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Harshith_Vangaveti_EmailAction",
+                                "emailAddress": "harshith.vangaveti@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Karthik_Mannem_EmailAction",
+                                "emailAddress": "Karthik.Mannem@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Bart_Elia_EmailAction",
+                                "emailAddress": "bart.elia@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                                                                                      
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": []
+                    },
+                    "sev3_4": {
+                        "emailReceivers": [
+                            {
+                                "name": "Serguei_Komarov-EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Harshith_Vangaveti_EmailAction",
+                                "emailAddress": "harshith.vangaveti@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Karthik_Mannem_EmailAction",
+                                "emailAddress": "Karthik.Mannem@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Bart_Elia_EmailAction",
+                                "emailAddress": "bart.elia@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                                                                                        
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": []
+                    }
+                }
+            },                                    
+            "prod": {
+                "alertsEnabled": true,
+                "actionGroupsEnabled": true,                
+                "environmentLetter": "p",
+                "ApimServiceName": "amn-wus2-hub-apim-p01",
+                "frontDoorsName": "amn-wus2-hub-afd-p01",
+                "appGatewayName": "amn-wus2-hub-agw-p01",
+                "appInsightsName": "amn-wus2-hub-appinsights-p01",
+                "vmsApiUrlForWebTest": "https://api.ttm.amnhealthcare.com/status-0123456789abcdef",
+                "atsApiUrlForWebTest": "https://ats-api.amnhealthcare.io/status-0123456789abcdef",
+                "apimLocations": [
+                    "West US 2",
+                    "West Central US"
+                ],
+                "tags": {
+                    "charge-to": "101-71200-5000-9500",
+                    "role": "infrastructure",
+                    "environment": "prod"
+                },
+                "actionGroups": {
+                    "sev0": {
+                        "emailReceivers": [
+                            {
+                                "name": "Harshith_Vangaveti_EmailAction",
+                                "emailAddress": "harshith.vangaveti@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Karthik_Mannem_EmailAction",
+                                "emailAddress": "Karthik.Mannem@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Serguei_Komarov_EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "David_Solheim_EmailAction",
+                                "emailAddress": "david.solheimv@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Nathon_Dalton_EmailAction",
+                                "emailAddress": "nathon.dalton@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "David_Boster_EmailAction",
+                                "emailAddress": "david.boster@medefis.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Bruce_Nicholls_EmailAction",
+                                "emailAddress": "bruce.nicholls@amnhealthcare.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Chris_Bride_EmailAction",
+                                "emailAddress": "chris.bride@amnhealthcare.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Bart_Elia_EmailAction",
+                                "emailAddress": "bart.elia@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                              
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": [
+                            {
+                                "name": "Serguei_Komarov_appPushAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com"
+                            }                    
+                        ]
+                    },
+                    "sev1_2": {
+                        "emailReceivers": [
+                            {
+                                "name": "Harshith_Vangaveti_EmailAction",
+                                "emailAddress": "harshith.vangaveti@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Karthik_Mannem_EmailAction",
+                                "emailAddress": "Karthik.Mannem@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Serguei_Komarov_EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "David_Solheim_EmailAction",
+                                "emailAddress": "david.solheimv@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Nathon_Dalton_EmailAction",
+                                "emailAddress": "nathon.dalton@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "David_Boster_EmailAction",
+                                "emailAddress": "david.boster@medefis.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Bruce_Nicholls_EmailAction",
+                                "emailAddress": "bruce.nicholls@amnhealthcare.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Chris_Bride_EmailAction",
+                                "emailAddress": "chris.bride@amnhealthcare.com",
+                                "useCommonAlertSchema": true
+                            },
+                            {
+                                "name": "Bart_Elia_EmailAction",
+                                "emailAddress": "bart.elia@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                                                                                                                                                                                                                                     
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": [
+                            {
+                                "name": "Serguei_Komarov_appPushAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com"
+                            }                    
+                        ]
+                    },
+                    "sev3_4": {
+                        "emailReceivers": [
+                            {
+                                "name": "Serguei_Komarov_EmailAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com",
+                                "useCommonAlertSchema": true
+                            }                            
+                        ],
+                        "smsReceivers": [],                
+                        "itsmReceivers": [],
+                        "azureAppPushReceivers": [
+                            {
+                                "name": "Serguei_Komarov_appPushAction",
+                                "emailAddress": "serguei.komarov@shiftwise.com"
+                            }                              
+                        ]
+                    }
+                }                
+            }
+        },
+        "sharedSettings": {
+            "actionGroups_AMN_IPS_Sev_0_name": "amn-gbl-hub-agrp-sev0",
+            "actionGroups_AMN_IPS_Sev_1_2_name": "amn-gbl-hub-agrp-sev1-2",
+            "actionGroups_AMN_IPS_Sev_3_4_name": "amn-gbl-hub-agrp-sev3-4",
+            "metricAlerts_AMN_IPS_APIM_Capacity_Use_greater_than_90_name": "amn-wus2-hub-alrt-apim-gateway-reaching-capacity",
+            "scheduledQueryAlerts_AMN_IPS_WAF_rule_triggered": "amn-wus2-hub-alrt-waf-rule-triggered",
+            "metricAlerts_AMN_IPS_AFD_backend_health_degraded_name": "amn-wus2-hub-alrt-afd-backend-health-degraded",
+            "metricAlerts_AMN_IPS_AFD_latency_increased_name": "amn-wus2-hub-alrt-afd-latency-increased",
+            "metricAlerts_AMN_IPS_AFD_request_count_spiked_name": "amn-wus2-hub-alrt-afd-request-count-spiked",
+            "metricAlerts_AMN_IPS_APIM_increased_request_duration_name": "amn-wus2-hub-alrt-apim-increased-request-duration",
+            "scheduledqueryrules_AMN_IPS_APIM_failed_requests_name": "amn-wus2-hub-alrt-apim-failed-requests",
+            "metricAlerts_AMN_IPS_AppGw_unhealthy_hosts_name": "amn-wus2-hub-alrt-app-gateway-unhealthy-hosts",
+            "webTests_AMN_IPS_VMS_API_Web_Test": "amn-wus2-hub-wtst-vms-api",
+            "webTests_AMN_IPS_ATS_API_Web_Test": "amn-wus2-hub-wtst-ats-api",
+            "metricAlerts_AMN_IPS_VMS_API_Web_Test_Alert": "amn-gbl-hub-alrt-vms-api-unreachable",
+            "metricAlerts_AMN_IPS_ATS_API_Web_Test_Alert": "amn-gbl-hub-alrt-ats-api-unreachable",
+            "metricAlerts_AMN_IPS_VMS_API_Web_Test_Alert_Sev0": "amn-gbl-hub-alrt-critical-vms-api-down",
+            "metricAlerts_AMN_IPS_ATS_API_Web_Test_Alert_Sev0": "amn-gbl-hub-alrt-critical-ats-api-down"            
+        }                
+    },
+    "resources": [
+        {
+            "type": "microsoft.insights/actionGroups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_0_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "groupShortName": "[concat('IPS-sev0-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].actionGroupsEnabled]",
+                "emailReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev0.emailReceivers]",
+                "smsReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev0.smsReceivers]",
+                "webhookReceivers": [],
+                "itsmReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev0.itsmReceivers]",
+                "azureAppPushReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev0.azureAppPushReceivers]",
+                "automationRunbookReceivers": [],
+                "voiceReceivers": [],
+                "logicAppReceivers": [],
+                "azureFunctionReceivers": []
+            }
+        },
+        {
+            "type": "microsoft.insights/actionGroups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "groupShortName": "[concat('IPS-sev1-2-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].actionGroupsEnabled]",
+                "emailReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev1_2.emailReceivers]",
+                "smsReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev1_2.smsReceivers]",
+                "webhookReceivers": [],
+                "itsmReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev1_2.itsmReceivers]",
+                "azureAppPushReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev1_2.azureAppPushReceivers]",
+                "automationRunbookReceivers": [],
+                "voiceReceivers": [],
+                "logicAppReceivers": [],
+                "azureFunctionReceivers": []
+            }            
+        },
+        {
+            "type": "microsoft.insights/actionGroups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_3_4_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "groupShortName": "[concat('IPS-sev3-4-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].actionGroupsEnabled]",
+                "emailReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev3_4.emailReceivers]",
+                "smsReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev3_4.smsReceivers]",
+                "webhookReceivers": [],
+                "itsmReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev3_4.itsmReceivers]",
+                "azureAppPushReceivers": "[variables('environmentSettings')[parameters('environmentName')].actionGroups.sev3_4.azureAppPushReceivers]",
+                "automationRunbookReceivers": [],
+                "voiceReceivers": [],
+                "logicAppReceivers": [],
+                "azureFunctionReceivers": []
+            }            
+        },        
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_APIM_Capacity_Use_greater_than_90_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "description": "API Management service capacity utilization was greater than 90% for the last 5 minutes. Recommended action: Monitor. If the alert does not auto resolve within the next 15 minutes - Escalate",
+                "severity": 2,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('Microsoft.ApiManagement/service', variables('environmentSettings')[parameters('environmentName')].ApimServiceName)]"
+                ],
+                "evaluationFrequency": "PT1M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "threshold": 90,
+                            "name": "Metric1",
+                            "metricNamespace": "Microsoft.ApiManagement/service",
+                            "metricName": "Capacity",
+                            "dimensions": [
+                                {
+                                    "name": "Location",
+                                    "operator": "Include",
+                                    "values": "[variables('environmentSettings')[parameters('environmentName')].apimLocations]"
+                                }
+                            ],
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "StaticThresholdCriterion"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.ApiManagement/service",
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/scheduledqueryrules",
+            "apiVersion": "2022-08-01-preview",
+            "name": "[concat(variables('sharedSettings').scheduledQueryAlerts_AMN_IPS_WAF_rule_triggered, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "westus2",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_3_4_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],            
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "description": "Front Door WAF rule blocked requests. Recommended action: Monitor. When these alerts keep firing rapidly and the alert shows Metric value (when alert fired) that is rising - Escalate.",
+                "severity": 3,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "evaluationFrequency": "PT5M",
+                "scopes": [
+                    "[resourceId('Microsoft.Network/frontdoors', variables('environmentSettings')[parameters('environmentName')].frontDoorsName)]"
+                ],
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "query": "AzureDiagnostics\n| where ResourceProvider == \"MICROSOFT.NETWORK\" and Category == \"FrontdoorWebApplicationFirewallLog\"\n| where action_s == \"Block\"\n| where Resource == \"AMN-WUS2-HUB-AFD-P01\"\n| where ruleName_s != \"DenyNonAMNTrafficToAMIE2\"\n| where ruleName_s !has \"Microsoft_BotManagerRuleSet\"\n",
+                            "timeAggregation": "Count",
+                            "dimensions": [],
+                            "operator": "GreaterThan",
+                            "threshold": 0,
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 1,
+                                "minFailingPeriodsToAlert": 1
+                            }
+                        }
+                    ]
+                },
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_3_4_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_AFD_backend_health_degraded_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],            
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "description": "Front Door average backend health percentage degraded. Recommended action: Monitor. If the alert does not auto resolve within the next 20 minutes - Escalate",
+                "severity": 2,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('Microsoft.Network/frontdoors', variables('environmentSettings')[parameters('environmentName')].frontDoorsName)]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "Medium",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "microsoft.network/frontdoors",
+                            "metricName": "BackendHealthPercentage",
+                            "operator": "LessThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Network/frontdoors",
+                "targetResourceRegion": "global",
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+                    }
+                ]
+            }
+        },
+       {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_AFD_latency_increased_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],            
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "description": "Front Door average total latency degraded. Recommended action: Monitor. If the latency keeps increasing - Escalate",
+                "severity": 2,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('Microsoft.Network/frontdoors', variables('environmentSettings')[parameters('environmentName')].frontDoorsName)]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "Medium",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "microsoft.network/frontdoors",
+                            "metricName": "TotalLatency",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Network/frontdoors",
+                "targetResourceRegion": "global",
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_AFD_request_count_spiked_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],            
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "description": "Front Door request count spiked for at least 4 times in the last 20 minutes. Recommended action: Monitor. If the alert does not auto resolve within the next 20 minutes - Escalate",
+                "severity": 2,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('Microsoft.Network/frontdoors', variables('environmentSettings')[parameters('environmentName')].frontDoorsName)]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "Low",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "microsoft.network/frontdoors",
+                            "metricName": "RequestCount",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Total",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Network/frontdoors",
+                "targetResourceRegion": "global",
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_APIM_increased_request_duration_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ], 
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",           
+            "properties": {
+                "description": "API Management average overall duration of gateway requests degraded for at least 4 times in the last 20 minutes. Recommended action: Monitor. If the alert does not auto resolve within the next 20 minutes - Escalate",
+                "severity": 2,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('Microsoft.ApiManagement/service', variables('environmentSettings')[parameters('environmentName')].ApimServiceName)]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "alertSensitivity": "Low",
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 4,
+                                "minFailingPeriodsToAlert": 4
+                            },
+                            "name": "Metric1",
+                            "metricNamespace": "microsoft.apimanagement/service",
+                            "metricName": "Duration",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "DynamicThresholdCriterion"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.MultipleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.ApiManagement/service",
+                "targetResourceRegion": "westus2",
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/scheduledqueryrules",
+            "apiVersion": "2022-08-01-preview",
+            "name": "[concat(variables('sharedSettings').scheduledqueryrules_AMN_IPS_APIM_failed_requests_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "westus2",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],            
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",
+            "properties": {
+                "description": "API Management count of failed requests not due to backend errors is greater than threshold. Recommended action: Monitor. If the alert does not auto resolve within the next 5 minutes - Escalate",
+                "severity": 2,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "evaluationFrequency": "PT5M",
+                "scopes": [
+                    "[resourceId('Microsoft.ApiManagement/service', variables('environmentSettings')[parameters('environmentName')].ApimServiceName)]"
+                ],
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "query": "ApiManagementGatewayLogs\n| where IsRequestSuccess == false\n| where isnull(BackendResponseCode) or BackendResponseCode < 400\n| where ResponseCode >= 400\n",
+                            "timeAggregation": "Count",
+                            "dimensions": [],
+                            "operator": "GreaterThan",
+                            "threshold": 0,
+                            "failingPeriods": {
+                                "numberOfEvaluationPeriods": 1,
+                                "minFailingPeriodsToAlert": 1
+                            }
+                        }
+                    ]
+                },
+                "autoMitigate": true,
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "microsoft.insights/metricAlerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_AppGw_unhealthy_hosts_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ], 
+            "tags": "[variables('environmentSettings')[parameters('environmentName')].tags]",           
+            "properties": {
+                "description": "Application Gateway unhealthy host count is greater than 0. Recommended action: Monitor. If the alert does not auto resolve within 5 minutes - Escalate",
+                "severity": 1,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('Microsoft.Network/applicationGateways', variables('environmentSettings')[parameters('environmentName')].appGatewayName)]"
+                ],
+                "evaluationFrequency": "PT1M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "allOf": [
+                        {
+                            "threshold": 0,
+                            "name": "Metric1",
+                            "metricNamespace": "microsoft.network/applicationgateways",
+                            "metricName": "UnhealthyHostCount",
+                            "operator": "GreaterThan",
+                            "timeAggregation": "Average",
+                            "criterionType": "StaticThresholdCriterion"
+                        }
+                    ],
+                    "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria"
+                },
+                "autoMitigate": true,
+                "targetResourceType": "Microsoft.Network/applicationGateways",
+                "targetResourceRegion": "westus2",
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+                    }
+                ]
+            }
+        },       
+        {
+            "type": "microsoft.insights/webtests",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "westus2",            
+            "tags": {
+                "[concat('hidden-link:', resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName))]": "Resource"
+            },
+            "properties": {
+                "SyntheticMonitorId": "[concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+                "Name": "AMN IPS VMS API Web Test",
+                "Enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "Frequency": 300,
+                "Timeout": 120,
+                "Kind": "ping",
+                "RetryEnabled": true,
+                "SSLCheck": true,
+                "SSLCertRemainingLifetimeCheck": 14,                
+                "Locations": [
+                    {
+                        "Id": "us-ca-sjc-azr"
+                    },
+                    {
+                        "Id": "us-tx-sn1-azr"
+                    },
+                    {
+                        "Id": "us-il-ch1-azr"
+                    },
+                    {
+                        "Id": "us-va-ash-azr"
+                    },
+                    {
+                        "Id": "us-fl-mia-edge"
+                    }
+                ],
+                "Configuration": {
+                    "WebTest": "[concat('<WebTest         Name=\"', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter),'\"         Enabled=\"True\"         CssProjectStructure=\"\"         CssIteration=\"\"         Timeout=\"120\"         WorkItemIds=\"\"         xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\"         Description=\"\"         CredentialUserName=\"\"         CredentialPassword=\"\"         PreAuthenticate=\"True\"         Proxy=\"default\"         StopOnError=\"False\"         RecordedResultFile=\"\"         ResultsLocale=\"\">        <Items>        <Request         Method=\"GET\"         Version=\"1.1\"         Url=\"', variables('environmentSettings')[parameters('environmentName')].vmsApiUrlForWebTest, '\"         ThinkTime=\"0\"         Timeout=\"120\"         ParseDependentRequests=\"False\"         FollowRedirects=\"True\"         RecordResult=\"True\"         Cache=\"False\"         ResponseTimeGoal=\"0\"         Encoding=\"utf-8\"         ExpectedHttpStatusCode=\"200\"         ExpectedResponseUrl=\"\"         ReportingName=\"\"         IgnoreHttpStatusCode=\"False\" />        </Items>        </WebTest>')]"
+                }
+            }
+        },
+        {
+            "type": "microsoft.insights/webtests",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "westus2",           
+            "tags": {
+                "[concat('hidden-link:', resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName))]": "Resource"
+            },
+            "properties": {
+                "SyntheticMonitorId": "[concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+                "Name": "AMN IPS ATS API Web Test",
+                "Enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "Frequency": 300,
+                "Timeout": 120,
+                "Kind": "ping",
+                "RetryEnabled": true,
+                "SSLCheck": true,
+                "SSLCertRemainingLifetimeCheck": 14,
+                "Locations": [
+                    {
+                        "Id": "us-ca-sjc-azr"
+                    },
+                    {
+                        "Id": "us-tx-sn1-azr"
+                    },
+                    {
+                        "Id": "us-il-ch1-azr"
+                    },
+                    {
+                        "Id": "us-va-ash-azr"
+                    },
+                    {
+                        "Id": "us-fl-mia-edge"
+                    }
+                ],
+                "Configuration": {
+                    "WebTest": "[concat('<WebTest         Name=\"', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter),'\"         Enabled=\"True\"         CssProjectStructure=\"\"         CssIteration=\"\"         Timeout=\"120\"         WorkItemIds=\"\"         xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\"         Description=\"\"         CredentialUserName=\"\"         CredentialPassword=\"\"         PreAuthenticate=\"True\"         Proxy=\"default\"         StopOnError=\"False\"         RecordedResultFile=\"\"         ResultsLocale=\"\">        <Items>        <Request         Method=\"GET\"         Version=\"1.1\"         Url=\"', variables('environmentSettings')[parameters('environmentName')].atsApiUrlForWebTest, '\"         ThinkTime=\"0\"         Timeout=\"120\"         ParseDependentRequests=\"False\"         FollowRedirects=\"True\"         RecordResult=\"True\"         Cache=\"False\"         ResponseTimeGoal=\"0\"         Encoding=\"utf-8\"         ExpectedHttpStatusCode=\"200\"         ExpectedResponseUrl=\"\"         ReportingName=\"\"         IgnoreHttpStatusCode=\"False\" />        </Items>        </WebTest>')]"
+                }
+            }
+        },
+        {
+            "type": "microsoft.insights/metricalerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_VMS_API_Web_Test_Alert, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],             
+            "tags": {
+                "[concat('hidden-link:', resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName))]": "Resource",
+                "[concat('hidden-link:', resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)))]": "Resource"
+            },
+            "properties": {
+                "description": "VMS API web test failed from 2 locations in the last 5 minutes. Recommended action: Monitor. If the alert does not auto resolve within the next 15 minutes - Escalate",
+                "severity": 1,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                    "[resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName)]"
+                ],
+                "evaluationFrequency": "PT1M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "webTestId": "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                    "componentId": "[resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName)]",
+                    "failedLocationCount": 2,
+                    "odata.type": "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria"
+                },
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                        "webHookProperties": {}
+                    }
+                ],
+                "autoMitigate": true
+            }
+        },
+        {
+            "type": "microsoft.insights/metricalerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_ATS_API_Web_Test_Alert, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],             
+            "tags": {
+                "[concat('hidden-link:', resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName))]": "Resource",
+                "[concat('hidden-link:', resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)))]": "Resource"
+            },
+            "properties": {
+                "description": "ATS API web test failed from 2 locations in the last 5 minutes. Recommended action: Monitor. If the alert does not auto resolve within the next 15 minutes - Escalate",
+                "severity": 1,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                    "[resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName)]"
+                ],
+                "evaluationFrequency": "PT1M",
+                "windowSize": "PT5M",
+                "criteria": {
+                    "webTestId": "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                    "componentId": "[resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName)]",
+                    "failedLocationCount": 2,
+                    "odata.type": "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria"
+                },
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_1_2_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                        "webHookProperties": {}
+                    }
+                ],
+                "autoMitigate": true
+            }
+        },
+        {
+            "type": "microsoft.insights/metricalerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_VMS_API_Web_Test_Alert_Sev0, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_0_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],             
+            "tags": {
+                "[concat('hidden-link:', resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName))]": "Resource",
+                "[concat('hidden-link:', resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)))]": "Resource"
+            },
+            "properties": {
+                "description": "VMS API web test failed from at least 2 locations for the last 15 minutes. Recommended action: Escalate",
+                "severity": 0,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                    "[resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName)]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT15M",
+                "criteria": {
+                    "webTestId": "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_VMS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                    "componentId": "[resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName)]",
+                    "failedLocationCount": 2,
+                    "odata.type": "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria"
+                },
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_0_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                        "webHookProperties": {}
+                    }
+                ],
+                "autoMitigate": true
+            }
+        },
+        {
+            "type": "microsoft.insights/metricalerts",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(variables('sharedSettings').metricAlerts_AMN_IPS_ATS_API_Web_Test_Alert_Sev0, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_0_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]"
+            ],             
+            "tags": {
+                "[concat('hidden-link:', resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName))]": "Resource",
+                "[concat('hidden-link:', resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter)))]": "Resource"
+            },
+            "properties": {
+                "description": "ATS API web test failed from at least 2 locations for the last 15 minutes. Recommended action: Escalate",
+                "severity": 0,
+                "enabled": "[variables('environmentSettings')[parameters('environmentName')].alertsEnabled]",
+                "scopes": [
+                    "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                    "[resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName)]"
+                ],
+                "evaluationFrequency": "PT5M",
+                "windowSize": "PT15M",
+                "criteria": {
+                    "webTestId": "[resourceId('microsoft.insights/webtests', concat(variables('sharedSettings').webTests_AMN_IPS_ATS_API_Web_Test, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                    "componentId": "[resourceId('microsoft.insights/components', variables('environmentSettings')[parameters('environmentName')].appInsightsName)]",
+                    "failedLocationCount": 2,
+                    "odata.type": "Microsoft.Azure.Monitor.WebtestLocationAvailabilityCriteria"
+                },
+                "actions": [
+                    {
+                        "actionGroupId": "[resourceId('microsoft.insights/actionGroups', concat(variables('sharedSettings').actionGroups_AMN_IPS_Sev_0_name, '-', variables('environmentSettings')[parameters('environmentName')].environmentLetter))]",
+                        "webHookProperties": {}
+                    }
+                ],
+                "autoMitigate": true
+            }
+        }                                                                                                
+    ],
+    "outputs": {
+        "environment": {
+            "value": "[parameters('environmentName')]",
+            "type": "string"
+        }
+    }    
+}

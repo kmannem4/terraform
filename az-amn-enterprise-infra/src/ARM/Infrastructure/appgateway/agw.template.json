@@ -1,0 +1,648 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "DR_location": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "applicationGatewayName": {
+      "type": "string"
+    },
+    "tier": {
+      "type": "string"
+    },
+    "skuSize": {
+      "type": "string"
+    },
+    "tagsArray": {
+      "type": "object"
+    },
+    "capacity": {
+      "type": "int",
+      "defaultValue": 2
+    },
+    "subnetName": {
+      "type": "string"
+    },
+    "fqdnname": {
+      "type": "string"
+    },
+    "apim_fqdnname": {
+      "type": "string"
+    },
+    "apim_management_backendpoolname": {
+      "type": "string"
+    },
+    "apim_management_backend_url": {
+      "type": "string"
+    },
+    "api_management_http_setting_requesttimeout": {
+      "type": "string"
+    },
+    "wildcard_api_gateway_hostname": {
+      "type": "array"
+    },
+    "apim_developer_portal_backendpoolname": {
+      "type": "string"
+    },
+    "apim_developer_portal_backend_url": {
+      "type": "string"
+    },
+    "api_http_setting_requesttimeout": {
+      "type": "string"
+    },
+    "api-management-apigatewayhostname": {
+      "type": "string"
+    },
+    "apigatewayhostname": {
+      "type": "string"
+    },
+    "apim-developer-portal-apigatewayhostname": {
+      "type": "string"
+    },
+    "ttmapiallsuffixes": {
+      "type": "array"
+    },
+    "apiallsuffixes_v1": {
+      "type": "array"
+    },
+    "apiallsuffixes_v2": {
+      "type": "array"
+    },
+    "requesttimeout": {
+      "type": "string"
+    },
+    "publicIPAddressesName": {
+      "type": "string"
+    },
+    "zones": {
+      "type": "array"
+    },
+    "privateIpAddress": {
+      "type": "string"
+    },
+    "managedIdentity": {
+      "type": "string"
+    },
+    "virtualnetworkname": {
+      "type": "string"
+    },
+    "vaultResourceGroupName": {
+      "type": "string"
+    },
+    "Managed_ID_ResourceGroupName": {
+      "type": "string"
+    },
+    "keyVaultName": {
+      "type": "string"
+    },
+    "ttm_sslCertName": {
+      "type": "string"
+    },
+    "amnonesslCertNameio": {
+      "type": "string"
+    },
+    "autoScaleMaxCapacity": {
+      "type": "int"
+    }
+  },
+  "variables": {
+    "vnetId": "[concat(resourceGroup().id, '/providers/Microsoft.Network/virtualNetworks/', parameters('virtualnetworkname'))]",
+    "publicIPRef": "[concat(resourceGroup().id, '/providers/Microsoft.Network/publicIPAddresses/', parameters('publicIPAddressesName'))]",
+    "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+    "applicationGatewayId": "[resourceId('Microsoft.Network/applicationGateways', parameters('applicationGatewayName'))]",
+    "ttm_sslCertName": "[resourceId(subscription().subscriptionId, parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('ttm_sslCertName'))]",
+    "amnonesecretResourceIdio": "[resourceId(subscription().subscriptionId, parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('amnonesslCertNameio'))]",
+    "useridentity": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('Managed_ID_ResourceGroupName'), '/providers/Microsoft.ManagedIdentity/userAssignedIdentities/', parameters('managedIdentity'))]"
+
+  },
+  "resources": [
+    {
+      "name": "[parameters('applicationGatewayName')]",
+      "type": "Microsoft.Network/applicationGateways",
+      "apiVersion": "2023-02-01",
+      "location": "[if(or(equals(parameters('environment'), 'INT_DR'), equals(parameters('environment'), 'PROD_DR'), equals(parameters('environment'), 'TEST_DR')), parameters('DR_location'), parameters('location'))]",
+      "zones": "[if(or(equals(parameters('environment'), 'INT_DR'), equals(parameters('environment'), 'PROD_DR'), equals(parameters('environment'), 'TEST_DR')), json('null'), parameters('zones'))]",
+      "dependsOn": [],
+      "tags": "[parameters('tagsArray')]",
+      "properties": {
+        "sku": {
+          "name": "[parameters('skuSize')]",
+          "tier": "[parameters('tier')]"
+        },
+        "gatewayIPConfigurations": [
+          {
+            "name": "appGatewayIpConfig",
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ],
+        "sslCertificates": [
+          {
+            "name": "amnone-api-https-listener-io",
+            "properties": {
+              "keyVaultSecretId": "[concat(reference(variables('amnonesecretResourceIdio'), '2018-02-14').secretUri)]"
+            }
+          },
+          {
+            "name": "ttm-api-https-listener",
+            "properties": {
+              "keyVaultSecretId": "[concat(reference(variables('ttm_sslCertName'), '2018-02-14').secretUri)]"
+            }
+          }
+        ],
+        "frontendIPConfigurations": [
+          {
+            "name": "appGwPublicFrontendIp",
+            "properties": {
+              "PublicIPAddress": {
+                "id": "[variables('publicIPRef')]"
+              }
+            }
+          },
+          {
+            "name": "appGwPrivateFrontendIp",
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              },
+              "privateIPAddress": "[parameters('privateIpAddress')]",
+              "privateIPAllocationMethod": "Static"
+            }
+          }
+        ],
+        "frontendPorts": [
+          {
+            "name": "port_80",
+            "properties": {
+              "port": 80
+            }
+          },
+          {
+            "name": "port_443",
+            "properties": {
+              "port": 443
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "apim-v1-pool",
+            "properties": {
+              "backendAddresses": [
+                {
+                  "fqdn": "[parameters('fqdnname')]"
+                }
+              ]
+            }
+          },
+          {
+            "name": "apim-v2-pool",
+            "properties": {
+              "backendAddresses": [
+                {
+                  "fqdn": "[parameters('apim_fqdnname')]"
+                }
+              ]
+            }
+          },
+          {
+            "name": "[parameters('apim_management_backendpoolname')]",
+            "properties": {
+              "backendAddresses": [
+                {
+                  "fqdn": "[parameters('apim_management_backend_url')]"
+                }
+              ]
+            }
+          },
+          {
+            "name": "[parameters('apim_developer_portal_backendpoolname')]",
+            "properties": {
+              "backendAddresses": [
+                {
+                  "fqdn": "[parameters('apim_developer_portal_backend_url')]"
+                }
+              ]
+            }
+          }
+        ],
+        "backendHttpSettingsCollection": [
+          {
+            "name": "apim-port-443-http-setting",
+            "properties": {
+              "Port": 443,
+              "Protocol": "Https",
+              "cookieBasedAffinity": "Disabled",
+              "requestTimeout": "[parameters('requesttimeout')]",
+              "pickHostNameFromBackendAddress": true,
+              "probe": {
+                "id": "[concat(variables('applicationGatewayId'), '/probes/apim-backend-probe')]"
+              }
+            }
+          },
+          {
+            "name": "api-management-http-setting",
+            "properties": {
+              "Port": 443,
+              "Protocol": "Https",
+              "cookieBasedAffinity": "Disabled",
+              "requestTimeout": "[parameters('api_management_http_setting_requesttimeout')]",
+              "pickHostNameFromBackendAddress": true,
+              "probe": {
+                "id": "[concat(variables('applicationGatewayId'), '/probes/api-management-probe')]"
+              }
+            }
+          },
+          {
+            "name": "api-portal-http-setting",
+            "properties": {
+              "Port": 443,
+              "Protocol": "Https",
+              "cookieBasedAffinity": "Disabled",
+              "requestTimeout": "[parameters('api_http_setting_requesttimeout')]",
+              "pickHostNameFromBackendAddress": true,
+              "probe": {
+                "id": "[concat(variables('applicationGatewayId'), '/probes/api-portal-probe')]"
+              }
+            }
+          }
+        ],
+        "httpListeners": [
+          {
+            "name": "public-https-listener",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+              },
+              "frontendPort": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendPorts/port_443')]"
+              },
+              "protocol": "Https",
+              "sslCertificate": {
+                "id": "[concat(variables('applicationGatewayId'), '/sslCertificates/ttm-api-https-listener')]"
+              },
+              "hostName": "[parameters('apigatewayhostname')]",
+              "requireServerNameIndication": true
+            }
+          },
+          {
+            "name": "api-https-listener-private",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendIPConfigurations/appGwPrivateFrontendIp')]"
+              },
+              "frontendPort": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendPorts/port_443')]"
+              },
+              "protocol": "Https",
+              "sslCertificate": {
+                "id": "[concat(variables('applicationGatewayId'), '/sslCertificates/amnone-api-https-listener-io')]"
+              },
+              "hostNames": "[parameters('wildcard_api_gateway_hostname')]",
+              "requireServerNameIndication": true
+            }
+          },
+          {
+            "name": "api-https-listener",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+              },
+              "frontendPort": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendPorts/port_443')]"
+              },
+              "protocol": "Https",
+              "sslCertificate": {
+                "id": "[concat(variables('applicationGatewayId'), '/sslCertificates/amnone-api-https-listener-io')]"
+              },
+              "hostNames": "[parameters('wildcard_api_gateway_hostname')]",
+              "requireServerNameIndication": true
+            }
+          },
+          {
+            "name": "api-management-https-listener",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+              },
+              "frontendPort": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendPorts/port_443')]"
+              },
+              "protocol": "Https",
+              "sslCertificate": {
+                "id": "[concat(variables('applicationGatewayId'), '/sslCertificates/amnone-api-https-listener-io')]"
+              },
+              "hostName": "[parameters('api-management-apigatewayhostname')]",
+              "requireServerNameIndication": true
+            }
+          },
+          {
+            "name": "apim-developer-portal-https-listener",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+              },
+              "frontendPort": {
+                "id": "[concat(variables('applicationGatewayId'), '/frontendPorts/port_443')]"
+              },
+              "protocol": "Https",
+              "sslCertificate": {
+                "id": "[concat(variables('applicationGatewayId'), '/sslCertificates/amnone-api-https-listener-io')]"
+              },
+              "hostName": "[parameters('apim-developer-portal-apigatewayhostname')]",
+              "requireServerNameIndication": true
+            }
+          }
+        ],
+        "requestRoutingRules": [
+          {
+            "Name": "apis-routing-rule",
+            "properties": {
+              "ruleType": "PathBasedRouting",
+              "priority": "10",
+              "httpListener": {
+                "id": "[concat(variables('applicationGatewayId'), '/httpListeners/api-https-listener')]"
+              },
+              "urlPathMap": {
+                "id": "[concat(variables('applicationGatewayId'), '/urlPathMaps/apis-routing-rule')]"
+              }
+            }
+          },
+          {
+            "Name": "ttm-apis-routing-rule",
+            "properties": {
+              "ruleType": "PathBasedRouting",
+              "priority": "20",
+              "httpListener": {
+                "id": "[concat(variables('applicationGatewayId'), '/httpListeners/public-https-listener')]"
+              },
+              "urlPathMap": {
+                "id": "[concat(variables('applicationGatewayId'), '/urlPathMaps/ttm-apis-routing-rule')]"
+              }
+            }
+          },
+          {
+            "Name": "apis-routing-rule-private",
+            "properties": {
+              "ruleType": "PathBasedRouting",
+              "priority": "30",
+              "httpListener": {
+                "id": "[concat(variables('applicationGatewayId'), '/httpListeners/api-https-listener-private')]"
+              },
+              "urlPathMap": {
+                "id": "[concat(variables('applicationGatewayId'), '/urlPathMaps/apis-routing-rule-private')]"
+              }
+            }
+          },
+          {
+            "Name": "api-management-backend-routing-rule",
+            "properties": {
+              "ruleType": "PathBasedRouting",
+              "priority": "40",
+              "httpListener": {
+                "id": "[concat(variables('applicationGatewayId'), '/httpListeners/api-management-https-listener')]"
+              },
+              "urlPathMap": {
+                "id": "[concat(variables('applicationGatewayId'), '/urlPathMaps/api-management-backend-routing-rule')]"
+              }
+            }
+          },
+          {
+            "Name": "apim-developer-portal-routing-rule",
+            "properties": {
+              "ruleType": "PathBasedRouting",
+              "priority": "50",
+              "httpListener": {
+                "id": "[concat(variables('applicationGatewayId'), '/httpListeners/apim-developer-portal-https-listener')]"
+              },
+              "urlPathMap": {
+                "id": "[concat(variables('applicationGatewayId'), '/urlPathMaps/apim-developer-backend-routing-rule')]"
+              }
+            }
+          }
+        ],
+        "enableHttp2": false,
+        "sslPolicy": {
+          "policyType": "Predefined",
+          "policyName": "AppGwSslPolicy20170401S"
+        },
+        "probes": [
+          {
+            "name": "apim-backend-probe",
+            "properties": {
+              "protocol": "Https",
+              "path": "/status-0123456789abcdef",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "pickHostNameFromBackendHttpSettings": true,
+              "minServers": 0,
+              "match": {}
+            }
+          },
+          {
+            "name": "api-management-probe",
+            "properties": {
+              "protocol": "Https",
+              "path": "/ServiceStatus",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "pickHostNameFromBackendHttpSettings": true,
+              "minServers": 0,
+              "match": {}
+            }
+          },
+          {
+            "name": "api-portal-probe",
+            "properties": {
+              "protocol": "Https",
+              "path": "/signin",
+              "interval": 30,
+              "timeout": 30,
+              "unhealthyThreshold": 3,
+              "pickHostNameFromBackendHttpSettings": true,
+              "minServers": 0,
+              "match": {}
+            }
+          }
+        ],
+        "autoscaleConfiguration": {
+          "minCapacity": "[parameters('capacity')]",
+          "maxCapacity": "[parameters('autoScaleMaxCapacity')]"
+        },
+        "urlPathMaps": [
+          {
+            "name": "ttm-apis-routing-rule",
+            "properties": {
+              "pathRules": [
+                {
+                  "name": "ttm-api-target",
+                  "properties": {
+                    "paths": "[parameters('ttmapiallsuffixes')]",
+                    "backendAddressPool": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/apim-v1-pool')]"
+                    },
+                    "backendHttpSettings": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/apim-port-443-http-setting')]"
+                    }
+                  }
+                }
+              ],
+              "defaultBackendAddressPool": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/apim-v1-pool')]"
+              },
+              "defaultBackendHttpSettings": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/apim-port-443-http-setting')]"
+              }
+            }
+          },
+          {
+            "name": "apis-routing-rule-private",
+            "properties": {
+              "pathRules": [
+                {
+                  "name": "apis-v1-target-private",
+                  "properties": {
+                    "paths": "[parameters('apiallsuffixes_v1')]",
+                    "backendAddressPool": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/apim-v1-pool')]"
+                    },
+                    "backendHttpSettings": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/apim-port-443-http-setting')]"
+                    }
+                  }
+                },
+                {
+                  "name": "apis-v2-target-private",
+                  "properties": {
+                    "paths": "[parameters('apiallsuffixes_v2')]",
+                    "backendAddressPool": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/apim-v2-pool')]"
+                    },
+                    "backendHttpSettings": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/apim-port-443-http-setting')]"
+                    }
+                  }
+                }
+              ],
+              "defaultBackendAddressPool": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/apim-v1-pool')]"
+              },
+              "defaultBackendHttpSettings": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/apim-port-443-http-setting')]"
+              }
+            }
+          },
+          {
+            "name": "apis-routing-rule",
+            "properties": {
+              "pathRules": [
+                {
+                  "name": "apis-v1-target",
+                  "properties": {
+                    "paths": "[parameters('apiallsuffixes_v1')]",
+                    "backendAddressPool": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/apim-v1-pool')]"
+                    },
+                    "backendHttpSettings": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/apim-port-443-http-setting')]"
+                    }
+                  }
+                },
+                {
+                  "name": "apis-v2-target",
+                  "properties": {
+                    "paths": "[parameters('apiallsuffixes_v2')]",
+                    "backendAddressPool": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/apim-v2-pool')]"
+                    },
+                    "backendHttpSettings": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/apim-port-443-http-setting')]"
+                    }
+                  }
+                }
+              ],
+              "defaultBackendAddressPool": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/apim-v1-pool')]"
+              },
+              "defaultBackendHttpSettings": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/apim-port-443-http-setting')]"
+              }
+            }
+          },
+          {
+            "name": "api-management-backend-routing-rule",
+            "properties": {
+              "pathRules": [
+                {
+                  "name": "api-management-backend-target",
+                  "properties": {
+                    "paths": [
+                      "/*"
+                    ],
+                    "backendAddressPool": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/', parameters('apim_management_backendpoolname'))]"
+                    },
+                    "backendHttpSettings": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/api-management-http-setting')]"
+                    }
+                  }
+                }
+              ],
+              "defaultBackendAddressPool": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/', parameters('apim_management_backendpoolname'))]"
+              },
+              "defaultBackendHttpSettings": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/api-management-http-setting')]"
+              }
+            }
+          },
+          {
+            "name": "apim-developer-backend-routing-rule",
+            "properties": {
+              "pathRules": [
+                {
+                  "name": "slashstar-to-developer-portal-pool",
+                  "properties": {
+                    "paths": [
+                      "/*"
+                    ],
+                    "backendAddressPool": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/', parameters('apim_developer_portal_backendpoolname'))]"
+                    },
+                    "backendHttpSettings": {
+                      "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/api-portal-http-setting')]"
+                    }
+                  }
+                }
+              ],
+              "defaultBackendAddressPool": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendAddressPools/', parameters('apim_developer_portal_backendpoolname'))]"
+              },
+              "defaultBackendHttpSettings": {
+                "id": "[concat(variables('applicationGatewayId'), '/backendHttpSettingsCollection/api-portal-http-setting')]"
+              }
+            }
+          }
+        ]
+      },
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[variables('useridentity')]": {}
+        }
+      }
+    }
+  ]
+}

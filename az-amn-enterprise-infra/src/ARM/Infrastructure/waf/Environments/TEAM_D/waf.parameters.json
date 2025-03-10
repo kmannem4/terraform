@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "WAFName": {
+      "value": "AMNHubFrontDoorWAFtd01"
+    },
+    "environment": {
+      "value": "Team-D"
+    },
+    "DenyNonAMNTraffic_state": {
+      "value": "Enabled"
+    },
+    "AllowRapid7Traffic_state": {
+      "value": "Enabled"
+    },
+    "AllowIDPWellKnown_state": {
+      "value": "Enabled"
+    },
+    "DenyNonAMNTrafficToAMIE2_url": {
+      "value": [
+        "^https:\\/\\/(td-amnone|td-ats-api|td-badgegenerator)(\\.int)?\\.amnhealthcare\\.io"
+      ]
+    },
+    "AllowPassportiMatchAPI_status": {
+      "value": "Enabled"
+    },
+    "AllowWebhooks_url": {
+      "value": [
+        "^https:\\/\\/(td-ats-)?td-api(\\.dev|\\.qa|\\.int)?\\.amnhealthcare\\.io\\/listener\\/notification\\/v\\d\\/(twilio|sendgrid)\\/(listener|status)\\/?(bulk|\\?amn-logid=[-a-zA-Z\\d]+)?$"
+      ]
+    },
+    "TempAllowVmsSCIMApi": {
+      "value": [
+        "https://td-api.dev.amnhealthcare.io/integrations/vms/scim"
+      ]
+    },
+    "AllowJobsearch_state": {
+      "value": "Disabled"
+    },
+    "AllowJobsearch": {
+      "value": [
+        "https://td-api.dev.amnhealthcare.io/oneamnjobsearch"
+      ]
+    },
+    "AllowIDPWellKnown": {
+      "value": [
+        "^https:\\/\\/td-authenticate\\.(dev|qa)\\.amnhealthcare\\.io\/(\\.well-known|connect)\/.*$"
+      ]
+    },
+    "location": {
+      "value": "global"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "infrastructure",
+        "environment": "Team-D"
+      }
+    }
+  }
+}

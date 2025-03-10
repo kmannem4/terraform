@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "appservicename": {
+      "value": "amn-wus2-hub-sonar-as-d01"
+    },
+    "AppService_Plan_Name": {
+      "value": "amn-wus2-hub-sonar-aspl-d01"
+    },
+    "AMN_HUB_subscriptionId": {
+      "value": "e764d23e-759d-4cd4-8b5f-27e4c703f6a8"
+    },
+    "AMN_HUB_ResourceGroupName": {
+      "value": "amn-wus2-hub-rg-d01"
+    },
+    "AMN_HUB_virtualNetworkName": {
+      "value": "amn-wus2-hub-vnet-d01"
+    },
+    "AMN_HUB_AS_subnetname": {
+      "value": "amn-hub-sonar-as-sn"
+    },
+    "Azure_front_Door_ID":{
+      "value": "7a5ecb20-a04f-4226-bb72-3d9414f539e9"
+    },
+    "ACRName" :{
+      "value": "amnwus2hubacrd01"
+    },
+    "ACRRepository":{
+      "value": "sonarqube"
+    },
+    "DockerImageName":{
+      "value": "sonarqube-9.6.1:DevelopCustom"
+    },
+    "SONAR.ES.BOOTSTRAP.CHECKS.DISABLE" : {
+        "value" : true
+    },
+    "location": {
+      "value": "westus2"
+    },
+    "kindtype": {
+      "value": "app,linux,container"
+    },
+    "AppService_publishing_Username": {
+      "value": "$amn-wus2-hub-sonar-as-d01"
+    },
+    "httpsOnly": {
+      "value": "true"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "app",
+        "environment": "dev",
+        "appname" : "sonarqube"
+      }
+    }
+  }
+}

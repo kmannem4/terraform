@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "privateDnsZones_name": {
+            "value": "azure-api.net"
+        },
+        "apim_DNS": {
+            "value": "amn-wus2-hub-apim-d01"
+        },
+        "apimname": {
+            "value": "amn-wus2-hub-apim-d01"
+        },
+        "AMN_HUB_subscriptionId": {
+            "value": "e764d23e-759d-4cd4-8b5f-27e4c703f6a8"
+        },
+        "AMN_HUB_serverFarmResourceGroup": {
+            "value": "amn-wus2-hub-rg-d01"
+        },
+        "AMN_HUB_APIM_ResourceGroup": {
+            "value": "amn-wus2-hub-rg-d01"
+        },
+        "AMN_HUB_virtualNetworkName": {
+            "value": "amn-wus2-hub-vnet-d01"
+        },
+        "AMN_HUB_virtualNetworkName_link": {
+            "value": "amn-wus2-hub-vnet-d01-link"
+        }
+    }
+}

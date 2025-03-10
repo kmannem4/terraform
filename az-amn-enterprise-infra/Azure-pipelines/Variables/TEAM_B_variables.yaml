@@ -1,0 +1,7 @@
+variables:
+  AMN_HUB_ResourceGroupName: 'amn-wus2-hub-rg-tb01'
+  Azure_Resource_Manager_connection : 'AMN_shared_DEV'
+  environment : 'TEAM_B'
+  location : 'west us 2'
+  Subscription : 'e764d23e-759d-4cd4-8b5f-27e4c703f6a8'
+  Template_Path : '/Artifacts/ARM/Infrastructure'

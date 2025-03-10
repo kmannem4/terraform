@@ -1,0 +1,136 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AppService_Plan_Name": {
+      "type": "string"
+    },
+    "AMN_HUB_subscriptionId": {
+      "type": "string"
+    },
+    "AMN_HUB_ResourceGroupName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "appserviceplanautoscalename": {
+      "type": "string"
+    },
+    "appserviceplanautoscale_minCapacity": {
+      "type": "string"
+    },
+    "appserviceplanautoscale_maxCapacity": {
+      "type": "string"
+    },
+    "tagsArray": {
+      "type": "object"
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('appserviceplanautoscalename')]",
+      "type": "Microsoft.Insights/autoscaleSettings",
+      "apiVersion": "2022-10-01",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tagsArray')]",
+      "properties": {
+        "name": "[parameters('appserviceplanautoscalename')]",
+        "enabled": true,
+        "targetResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/Microsoft.Web/serverfarms/', parameters('AppService_Plan_Name'))]",
+        "profiles": [
+          {
+            "name": "Auto created scale condition",
+            "capacity": {
+              "minimum": "[parameters('appserviceplanautoscale_minCapacity')]",
+              "maximum": "[parameters('appserviceplanautoscale_maxCapacity')]",
+              "default": "[parameters('appserviceplanautoscale_minCapacity')]"
+            },
+            "rules": [
+              {
+                "scaleAction": {
+                  "direction": "Increase",
+                  "type": "ChangeCount",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                },
+                "metricTrigger": {
+                  "metricName": "CpuPercentage",
+                  "metricNamespace": "microsoft.web/serverfarms",
+                  "metricResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/Microsoft.Web/serverfarms/', parameters('AppService_Plan_Name'))]",
+                  "operator": "GreaterThan",
+                  "statistic": "Average",
+                  "threshold": 70,
+                  "timeAggregation": "Average",
+                  "timeGrain": "PT1M",
+                  "timeWindow": "PT2M",
+                  "dividePerInstance": false
+                }
+              },
+              {
+                "scaleAction": {
+                  "direction": "Increase",
+                  "type": "ChangeCount",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                },
+                "metricTrigger": {
+                  "metricName": "HttpQueueLength",
+                  "metricNamespace": "microsoft.web/serverfarms",
+                  "metricResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/Microsoft.Web/serverfarms/', parameters('AppService_Plan_Name'))]",
+                  "operator": "GreaterThan",
+                  "statistic": "Average",
+                  "threshold": 2,
+                  "timeAggregation": "Average",
+                  "timeGrain": "PT1M",
+                  "timeWindow": "PT1M",
+                  "dividePerInstance": false
+                }
+              },
+              {
+                "scaleAction": {
+                  "direction": "Decrease",
+                  "type": "ChangeCount",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                },
+                "metricTrigger": {
+                  "metricName": "CpuPercentage",
+                  "metricNamespace": "microsoft.web/serverfarms",
+                  "metricResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/Microsoft.Web/serverfarms/', parameters('AppService_Plan_Name'))]",
+                  "operator": "LessThan",
+                  "statistic": "Average",
+                  "threshold": 35,
+                  "timeAggregation": "Average",
+                  "timeGrain": "PT1M",
+                  "timeWindow": "PT5M",
+                  "dividePerInstance": false
+                }
+              },
+              {
+                "scaleAction": {
+                  "direction": "Decrease",
+                  "type": "ChangeCount",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                },
+                "metricTrigger": {
+                  "metricName": "HttpQueueLength",
+                  "metricNamespace": "microsoft.web/serverfarms",
+                  "metricResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/Microsoft.Web/serverfarms/', parameters('AppService_Plan_Name'))]",
+                  "operator": "LessThan",
+                  "statistic": "Average",
+                  "threshold": 2,
+                  "timeAggregation": "Average",
+                  "timeGrain": "PT1M",
+                  "timeWindow": "PT5M",
+                  "dividePerInstance": false
+                 }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

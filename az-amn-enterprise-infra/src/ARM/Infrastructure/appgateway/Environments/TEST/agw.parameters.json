@@ -1,0 +1,172 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "westus2"
+    },
+    "DR_location": {
+      "value": "westcentralus"
+    },
+    "environment": {
+      "value": "TEST"
+    },
+    "applicationGatewayName": {
+      "value": "amn-wus2-hub-agw-t01"
+    },
+    "tier": {
+      "value": "Standard_v2"
+    },
+    "skuSize": {
+      "value": "Standard_v2"
+    },
+    "capacity": {
+      "value": 1
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "infrastructure",
+        "environment": "test"
+      }
+    },
+    "subnetName": {
+      "value": "amn-hub-agw-sn"
+    },
+    "fqdnname": {
+      "value": "amn-wus2-hub-apim-t01.azure-api.net"
+    },
+    "apim_fqdnname": {
+      "value": "amn-wus2-hub-apim-t02.azure-api.net"
+    },
+    "apiallsuffixes_v1": {
+      "value": [
+        "/sm/*",
+        "/um/*",
+        "/floatpool/*",
+        "/clients/*",
+        "/billing/*",
+        "/ttm-billing/*",
+        "/users/*",
+        "/insights/*",
+        "/om/*",
+        "/ref/*",
+        "/docs/*",
+        "/sitemap/*",
+        "/event-scheduler/*",
+        "/integrations/vms/*",
+        "/flexmobile/*",
+        "/packetgen/*",
+        "/onecredential/*",
+        "/local-scheduler/*",
+        "/oneamnjobsearch/*"
+      ]
+    },
+    "apiallsuffixes_v2": {
+      "value": [
+        "/logistics/api/*",
+        "/candidate/*",
+        "/credentialing/*",
+        "/facility/*",
+        "/notification/*",
+        "/notificationhub/*",
+        "/order/*",
+        "/placement/*",
+        "/shared/*",
+        "/template/*",
+        "/imatch/*",
+        "/ipreference/*",
+        "/listener/*",
+        "/task/*",
+        "/legacy/*"
+      ]
+    },
+    "apim_management_backendpoolname": {
+      "value": "api-management-backend-pool"
+    },
+    "api_management_http_setting_requesttimeout": {
+      "value": "20"
+    },
+    "apim_management_backend_url": {
+      "value": "api-management.test.amnhealthcare.io"
+    },
+    "api-management-apigatewayhostname": {
+      "value": "api-management-gateway.test.amnhealthcare.io"
+    },
+    "apim_developer_portal_backendpoolname": {
+      "value": "apim-developer-portal-pool"
+    },
+    "apim_developer_portal_backend_url": {
+      "value": "api-developer.test.amnhealthcare.io"
+    },
+    "api_http_setting_requesttimeout": {
+      "value": "60"
+    },
+    "apim-developer-portal-apigatewayhostname": {
+      "value": "api-developer-gateway.test.amnhealthcare.io"
+    },
+    "apigatewayhostname": {
+      "value": "apigateway.test.ttm.amnhealthcare.com"
+    },
+    "wildcard_api_gateway_hostname": {
+      "value": [
+        "*.test.amnhealthcare.io"
+      ]
+    },
+    "ttmapiallsuffixes": {
+      "value": [
+        "/sm/*",
+        "/clients/*",
+        "/billing/*",
+        "/ttm-billing/*",
+        "/insights/*",
+        "/users/*",
+        "/om/*",
+        "/ref/*",
+        "/docs/*",
+        "/sitemap/*",
+        "/integrations/vms/*"
+      ]
+    },
+    "requesttimeout": {
+      "value": "300"
+    },
+    "publicIPAddressesName": {
+      "value": "amn-wus2-hub-pip-t01"
+    },
+    "zones": {
+      "value": [
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    "privateIpAddress": {
+      "value": "10.98.88.101"
+    },
+    "managedIdentity": {
+      "value": "amn-wus2-hub-agw-mgid-t01"
+    },
+    "virtualnetworkname": {
+      "value": "amn-wus2-hub-vnet-t01"
+    },
+    "vaultResourceGroupName": {
+      "value": "amn-wus2-hub-rg-d01"
+    },
+    "Managed_ID_ResourceGroupName": {
+      "value": "amn-wus2-hub-rg-t01"
+    },
+    "keyVaultName": {
+      "value": "amn-wus2-hub-kv-d01"
+    },
+    "ttm_sslCertName": {
+      "value": "wildcard-test-ttm-amnhealthcare-com"
+    },
+    "amnonesslCertNameio": {
+      "value": "wildcard-test-amnhealthcare-io"
+    },
+    "autoScaleMaxCapacity": {
+      "value": 10
+    }
+  }
+}

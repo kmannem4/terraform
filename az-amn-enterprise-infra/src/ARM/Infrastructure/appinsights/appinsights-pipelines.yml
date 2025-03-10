@@ -1,0 +1,505 @@
+# Pipeline file structure: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
+# Task List: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks
+
+name: "2.0$(rev:.r)"
+
+resources:
+  - repo : self
+
+# The pipeline triggers for every commit (trigger: '*')   
+trigger:
+   batch: true
+   branches:
+    include:
+      - /*
+   paths :
+    include:
+    - src/ARM/Infrastructure/appinsights/*
+
+# The pipeline triggers for every  pull requests (pr: '*')
+pr: 
+- '*'
+
+variables:
+ - group: "AMN_IPS_INFRA"
+
+stages:
+# this stage is for building code
+- stage : Build
+  jobs:
+  - template : /Azure-pipelines/build-steps.yml
+
+#==================================================================================================================================================================
+
+# This stage deploys the code to TEST environment. It triggers for pull requests (refs/pull/*) and commits to the develop branch (refs/heads/develop) and when the build is successful.
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_TEST
+  displayName: Deploying_to_TEST
+  dependsOn:
+    - Build
+  #list the variables here
+  condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/pull/$(System.PullRequest.PullRequestId)/merge'), startsWith(variables['Build.SourceBranch'], 'refs/heads/story/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+  variables :
+  - template : /Azure-pipelines/Variables/TEST_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'TEST'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+
+#==================================================================================================================================================================
+
+#==================================================================================================================================================================
+
+# This stage deploys the code to the DEV environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_DEV
+  displayName: Deploying_to_DEV
+  dependsOn:
+    - Deploying_to_TEST
+  condition: and(succeeded('Deploying_to_TEST'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/DEV_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'DEV'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+               
+#==================================================================================================================================================================
+
+# This stage deploys the code to the DEV environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_TEAM_A
+  displayName: Deploying_to_TEAM_A
+  dependsOn:
+    - Deploying_to_TEST
+  condition: and(succeeded('Deploying_to_TEST'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_A_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'TEAM_A'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+               
+#==================================================================================================================================================================
+
+# This stage deploys the code to the DEV environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_TEAM_B
+  displayName: Deploying_to_TEAM_B
+  dependsOn:
+    - Deploying_to_TEAM_A
+  condition: and(succeeded('Deploying_to_TEAM_A'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_B_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'TEAM_B'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+               
+#==================================================================================================================================================================
+
+
+# This stage deploys the code to the DEV environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_TEAM_C
+  displayName: Deploying_to_TEAM_C
+  dependsOn:
+    - Deploying_to_TEAM_B
+  condition: and(succeeded('Deploying_to_TEAM_B'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_C_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'TEAM_C'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+               
+#==================================================================================================================================================================
+
+# This stage deploys the code to the DEV environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_TEAM_D
+  displayName: Deploying_to_TEAM_D
+  dependsOn:
+    - Deploying_to_TEAM_C
+  condition: and(succeeded('Deploying_to_TEAM_C'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_D_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'TEAM_D'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+               
+#==================================================================================================================================================================
+
+# This stage deploys the code to the DEV environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_TEAM_E
+  displayName: Deploying_to_TEAM_E
+  dependsOn:
+    - Deploying_to_TEAM_D
+  condition: and(succeeded('Deploying_to_TEAM_D'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/TEAM_E_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'TEAM_E'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+               
+#==================================================================================================================================================================
+
+# This stage deploys the code to the DEV environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_TRAIN
+  displayName: Deploying_to_TRAIN
+  dependsOn:
+    - Deploying_to_TEAM_E
+  condition: and(succeeded('Deploying_to_TEAM_E'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/TRAIN_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'TRAIN'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+               
+#==================================================================================================================================================================
+# This stage deploys the code to the QA environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_QA
+  displayName: Deploying_to_QA
+  dependsOn:
+    - Deploying_to_DEV
+  condition: and(succeeded('Deploying_to_DEV'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/QA_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'QA'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+
+#==================================================================================================================================================================
+
+# This stage deploys the code to the INT environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_INT
+  displayName: Deploying_to_INT
+  dependsOn:
+    - Deploying_to_QA
+  condition: and(succeeded('Deploying_to_QA'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/INT_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'INT'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_PROD'
+
+
+#==================================================================================================================================================================
+
+# This stage deploys the code to the PROD environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_PROD
+  displayName: Deploying_to_PROD
+  dependsOn:
+    - Deploying_to_INT
+  condition: and(succeeded('Deploying_to_INT'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/PROD_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: appinsightsDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'PROD'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'appinsights'
+               resource_template_name : 'appinsights.template.json'
+               resource_param_name : 'appinsights.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_PROD'

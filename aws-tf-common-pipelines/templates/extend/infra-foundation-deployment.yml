@@ -1,0 +1,213 @@
+trigger: none
+
+parameters:
+  - name: environment
+    type: string
+    values:
+      - dev
+      - qa
+      - prod
+
+  - name: vertical
+    type: string
+
+  - name: resourceFile
+    type: string
+
+  - name: terraformVersion
+    type: string
+    default: "1.3.9"
+
+stages:
+  - stage: "Perform_Code_Scan"
+    displayName: "Checkov - Scan Terraform Code"
+    jobs:
+      - job: "runCheckov"
+        displayName: "Checkov > Pull, Scan & Publish Scan Report"
+        steps:
+          - bash: |
+              docker pull bridgecrew/checkov
+            workingDirectory: $(System.DefaultWorkingDirectory)
+            displayName: "Pull > bridgecrew/checkov"
+          - bash: |
+              docker run --volume $(pwd):/tf bridgecrew/checkov --download-external-modules True --external-modules-download-path /tf --directory /tf --output junitxml --soft-fail > $(pwd)/TEST-CheckovReport.xml
+              ls -ltr
+              pwd
+              cat TEST-CheckovReport.xml
+            workingDirectory: $(System.DefaultWorkingDirectory)
+            displayName: "Run > checkov"
+          - task: PublishTestResults@2
+            displayName: "Publish > Checkov Scan Report"
+            condition: succeededOrFailed()
+            inputs:
+              testRunTitle: "Checkov Results"
+              failTaskOnFailedTests: true
+              mergeTestResults: false
+              publishRunAttachments: true
+              testResultsFormat: "JUnit"
+              testResultsFiles: "**/TEST-*.xml"
+              searchFolder: "$(System.DefaultWorkingDirectory)"
+
+  - stage: "Terraform_Plan"
+    displayName: "Terraform_Plan_${{ lower(parameters.environment) }}"
+    dependsOn: [Perform_Code_Scan]
+    pool:
+      vmImage: "ubuntu-latest"
+    variables:
+      - template: ../variables/terraform.yml
+      - name: environmentType
+        ${{ if notIn(parameters.environment, 'prod') }}:
+          value: dev
+        ${{ if in(parameters.environment, 'prod') }}: 
+          value: prod
+    jobs:
+      - job: Plan_Configuration
+        displayName: "Plan Configuration"
+        steps:
+          ### Install SSH key on ADO agent to access terraform modules git repo.
+          - task: InstallSSHKey@0
+            displayName: "Install an SSH key"
+            inputs:
+              knownHostsEntry: "ssh.dev.azure.com"
+              sshKeySecureFile: "terraform_rsa"
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+            displayName: "Terraform Install"
+            inputs:
+              terraformVersion: latest
+          - task: TerraformTaskV2@2
+            displayName: "Terraform Init"
+            inputs:
+              provider: "aws"
+              command: "init"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure"
+              backendServiceAWS: "AMNAWSTFAutomation_${{ lower(parameters.vertical) }}_${{ variables['environmentType'] }}"
+              backendAWSBucketName: ${{ variables.backendS3Account }}
+              backendAWSKey: "${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}.tfstate"
+          - task: TerraformTaskV2@2
+            displayName: "Terraform Validate"
+            inputs:
+              provider: "aws"
+              command: "validate"
+          - task: CmdLine@2
+            displayName: "List workingDirectory"
+            inputs:
+              script: |
+                pwd
+                echo $(System.DefaultWorkingDirectory)
+                echo ${{ lower(parameters.vertical) }}
+                ls -ltr
+                cat $(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}
+          - task: TerraformTaskV2@2
+            displayName: "Terraform Plan"
+            inputs:
+              provider: "aws"
+              command: "plan"
+              commandOptions: '-input=false -var-file="$(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}"'
+              backendServiceAWS: ${{ variables.backendServiceAWS }}
+              backendAWSBucketName: ${{ variables.backendS3Account }}
+              backendAWSKey: "${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}.tfstate"
+              environmentServiceNameAWS: "AMNAWSTFAutomation_${{ lower(parameters.vertical) }}_${{ variables['environmentType'] }}"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure"
+          - task: ArchiveFiles@2
+            displayName: "Create Plan Artifact"
+            inputs:
+              rootFolderOrFile: "$(Build.SourcesDirectory)"
+              includeRootFolder: false
+              archiveType: "tar"
+              tarCompression: "gz"
+              archiveFile: "$(Build.ArtifactStagingDirectory)/$(Build.BuildId).tgz"
+              replaceExistingArchive: true
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Plan Artifact"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "$(Build.BuildId)-tfplan"
+              publishLocation: "Container"
+          - task: DeleteFiles@1
+            displayName: "Remove unneeded files"
+            inputs:
+              contents: |
+                .terraform
+                tfplan
+  - stage: "Terraform_Apply"
+    displayName: "Terraform_Apply_${{ lower(parameters.environment) }}"
+    dependsOn: [Terraform_Plan]
+    condition: succeeded('Terraform_Plan')
+    pool:
+      vmImage: "ubuntu-latest"
+    variables:
+      - template: ../variables/terraform.yml
+      - name: environmentType
+        ${{ if notIn(parameters.environment, 'prod') }}:
+          value: dev
+        ${{ if in(parameters.environment, 'prod') }}: 
+          value: prod
+    jobs:
+      - deployment: terraform_apply
+        continueOnError: false
+        environment: "AMN_CloudOps_Approval"
+        timeoutInMinutes: 120
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadBuildArtifacts@0
+                  displayName: "Download Plan Artifact"
+                  inputs:
+                    artifactName: "$(Build.BuildId)-tfplan"
+                - task: ExtractFiles@1
+                  displayName: "Extract Terraform Plan Artifact"
+                  inputs:
+                    archiveFilePatterns: "$(System.ArtifactsDirectory)/$(Build.BuildId)-tfplan/$(Build.BuildId).tgz"
+                    destinationFolder: "$(System.DefaultWorkingDirectory)"
+                    cleanDestinationFolder: false
+                  ### Install SSH key on ADO agent to access terraform modules git repo.
+                - task: InstallSSHKey@0
+                  displayName: "Install an SSH key"
+                  inputs:
+                    knownHostsEntry: "ssh.dev.azure.com"
+                    sshKeySecureFile: "terraform_rsa"
+                - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+                  displayName: "Terraform Install"
+                  inputs:
+                    terraformVersion: latest
+                - task: TerraformTaskV2@2
+                  displayName: "Terraform Init"
+                  inputs:
+                    provider: "aws"
+                    command: "init"
+                    backendServiceAWS: ${{ variables.backendServiceAWS }}
+                    backendAWSBucketName: ${{ variables.backendS3Account }}
+                    backendAWSKey: "${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}.tfstate"
+                    workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure"
+                - task: TerraformTaskV2@2
+                  displayName: "Terraform Validate"
+                  inputs:
+                    provider: "aws"
+                    command: "validate"
+                - task: CmdLine@2
+                  displayName: "List workingDirectory"
+                  inputs:
+                    script: |
+                      pwd
+                      echo $(System.DefaultWorkingDirectory)
+                      echo ${{ variables.backendResourceGroup }}
+                      echo ${{ lower(parameters.vertical) }}
+                      ls -ltr
+                      cat $(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}
+                - task: TerraformTaskV2@2
+                  displayName: "Terraform Plan"
+                  inputs:
+                    provider: "aws"
+                    command: "plan"
+                    commandOptions: '-input=false -var-file="$(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}"'
+                    workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure"
+                    environmentServiceNameAWS: "AMNAWSTFAutomation_${{ lower(parameters.vertical) }}_${{ variables['environmentType'] }}"
+                - task: TerraformTaskV2@2
+                  displayName: "Terraform Apply"
+                  inputs:
+                    provider: "aws"
+                    command: "apply"
+                    commandOptions: '-input=false -auto-approve -var-file="$(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}"'
+                    environmentServiceNameAWS: "AMNAWSTFAutomation_${{ lower(parameters.vertical) }}_${{ variables['environmentType'] }}"
+                    workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure"

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "cpu_metricalerts_name": {
+      "value": "amn-enterprise-bus-cpu-alrt-i"
+    },
+    "servererrors_metricalerts_name": {
+      "value": "amn-enterprise-bus-servererrors-alrt-i"
+    },
+    "memory_metricalerts_name": {
+      "value": "amn-enterprise-bus-memory-alrt-i"
+    },
+    "throttling_metricalerts_name": {
+      "value": "amn-enterprise-bus-throttling-alrt-i"
+    },
+    "topic_dlq_metricalerts_name": {
+      "value": "amn-enterprise-topic-dlq-alrt-i"
+    },
+    "servicebus_name": {
+      "value": "amn-wcus-hub-sbns-i01"
+    },
+    "App_Insights_Smart_Detection_name": {
+      "value": "Application Insights Smart Detection"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "product": "Platform Services",
+        "environment": "INT",
+        "managed-by": "cloud.engineers@amnhealthcare.com"
+      }
+    }
+  }
+}

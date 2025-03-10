@@ -1,0 +1,20 @@
+name: "1.0$(rev:.r)"
+
+trigger: none
+
+# variables:
+#   - template: variables/az-tf-module-common-variables.yaml
+
+parameters:
+  - name: resourceGroupName
+    type: string
+
+steps:
+  - task: AzureCLI@2
+    displayName: Delete ${{ parameters.resourceGroupName }} resource group
+    inputs:
+      azureSubscription: "ADO-AMNEngineering-SharedServices-lower-AMN-TF-Test-ServiceConnection" #${{ variables.ServiceArm }}
+      scriptType: "pscore"
+      scriptLocation: "inlineScript"
+      inlineScript: |
+        az group delete --name ${{ parameters.resourceGroupName }} --yes

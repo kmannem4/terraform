@@ -1,0 +1,47 @@
+name: '1.0$(rev:.r)'
+
+resources:
+  repositories:
+    - repository: amn-az-tf-common-pipelines
+      type: git
+      name: "Terraform/amn-az-tf-common-pipelines"
+    - repository: amn-az-tfm-resourcegroup
+      type: git
+      name: "Terraform/amn-az-tfm-resourcegroup"
+    - repository: amn-az-tfm-storage-account
+      type: git
+      name: "Terraform/amn-az-tfm-storage-account"
+
+variables:
+  - name: moduleHeader
+    value: "Terraform module to configure diagnostic settings of azure resource to collect logs and metrics to monitor the health and performance." 
+    
+  - name: exampleScenario
+    value: "Create resource group, storage account resource and configure below diagnostic settings for storage account to collect logs and metrics to monitor the health and performance.<br /><br /> - Configure the Log Analytics Workspace ID (log_analytics_workspace_id) for routing diagnostic data.<br /> - Configure the destination type (log_analytics_destination_type) as Dedicated to ensure logs sent to the Log Analytics workspace are stored in resource-specific tables instead of the legacy AzureDiagnostics table.<br />"
+
+  - template: variables/az-tf-module-common-variables.yaml@amn-az-tf-common-pipelines
+    parameters:
+      repoName: amn-az-tfm-diagnostic-setting
+
+trigger:
+  - none
+
+stages:
+- template: templates/az-tf-module-pr-template.yaml@amn-az-tf-common-pipelines
+  parameters:
+    WorkingDirectory: $(workingDirectory)
+    ServiceArm: $(ServiceArm)
+    VarFilePath: '"$(workingDirectory)/$(environment)".tfvars'
+    TestDirectory: 'tests/input_validation_tests'
+    PoolName: 'shac_linux_infra'
+    DependentRepositories:
+     - "amn-az-tfm-resourcegroup"
+     - "amn-az-tfm-storage-account"
+     
+- stage: RaisePR
+  displayName: 'Raise PR to Default Branch'
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - template: templates/readme-pr-template.yaml@amn-az-tf-common-pipelines
+    parameters:
+      TARGET_BRANCH_NAME: 'main'  # Replace with your default branch

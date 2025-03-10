@@ -1,0 +1,38 @@
+name: '1.0$(rev:.r)'
+
+resources:
+  repositories:
+    - repository: amn-az-tf-common-pipelines
+      type: git
+      name: "Terraform/amn-az-tf-common-pipelines"
+
+variables:
+  - name: moduleHeader
+    value: "Terraform module to deploy and manage user assigned identity in Azure."
+  
+  - name: exampleScenario
+    value: "Create user assigned identity <br /><br /> The following steps in example to using this module:<br /> - Create user assigned identity"
+
+  - template: variables/az-tf-module-common-variables.yaml@amn-az-tf-common-pipelines
+    parameters:
+      repoName: amn-az-tfm-user-assigned-identity
+
+trigger:
+  - none
+
+stages:
+- template: templates/az-tf-module-pr-template.yaml@amn-az-tf-common-pipelines
+  parameters:
+    WorkingDirectory: $(workingDirectory)
+    ServiceArm: $(ServiceArm)
+    VarFilePath: '"$(workingDirectory)/$(environment)".tfvars'
+    TestDirectory: 'tests/input_output_validation_tests'
+    PoolName: 'shac_linux_infra'
+
+- stage: RaisePR
+  displayName: 'Raise PR to Default Branch'
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - template: templates/readme-pr-template.yaml@amn-az-tf-common-pipelines
+    parameters:
+      TARGET_BRANCH_NAME: 'main'  # Replace with your default branch

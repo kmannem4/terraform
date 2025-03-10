@@ -1,0 +1,157 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {	
+      "type": "string"	
+    },
+    "servicebus_name": {
+      "type": "string"
+    },
+    "AMN_HUB_subscriptionId": {
+      "type": "string"
+    },
+    "AMN_HUB_ResourceGroupName": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "DR_location": {
+      "type": "string"
+    },
+    "servicebus_autoscalename": {
+      "type": "string"
+    },
+    "servicebusautoscale_minCapacity": {
+      "type": "string"
+    },
+    "servicebusautoscale_maxCapacity": {
+      "type": "string"
+    },
+    "tagsArray": {
+      "type": "object"
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('servicebus_autoscalename')]",
+      "type": "Microsoft.Insights/autoscaleSettings",
+      "apiVersion": "2022-07-01",
+      "location": "[if(or(equals(parameters('environment'), 'TEST_DR'), equals(parameters('environment'), 'PROD_DR'), equals(parameters('environment'), 'INT_DR')), parameters('DR_location'), parameters('location'))]",
+      "tags": "[parameters('tagsArray')]",
+      "properties": {
+        "name": "[parameters('servicebus_autoscalename')]",
+        "enabled": true,
+        "targetResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/microsoft.servicebus/namespaces/', parameters('servicebus_name'))]",
+        "profiles": [
+          {
+            "name": "Metrics-based autoscale profile",
+            "capacity": {
+              "minimum": "[parameters('servicebusautoscale_minCapacity')]",
+              "maximum": "[parameters('servicebusautoscale_maxCapacity')]",
+              "default": "[parameters('servicebusautoscale_minCapacity')]"
+            },
+            "rules": [
+              {
+                "scaleAction": {
+                  "direction": "Increase",
+                  "type": "ServiceAllowedNextValue",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                },
+                "metricTrigger": {
+                  "metricName": "NamespaceCpuUsage",
+                  "metricNamespace": "microsoft.servicebus/namespaces",
+                  "metricResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/microsoft.servicebus/namespaces/', parameters('servicebus_name'))]",
+                  "operator": "GreaterThan",
+                  "statistic": "Average",
+                  "threshold": 75,
+                  "timeAggregation": "Average",
+                  "timeGrain": "PT1M",
+                  "timeWindow": "PT10M",
+                  "dividePerInstance": false
+                }
+              },
+              {
+                "scaleAction": {
+                  "direction": "Increase",
+                  "type": "ServiceAllowedNextValue",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                },
+                "metricTrigger": {
+                  "metricName": "NamespaceMemoryUsage",
+                  "metricNamespace": "microsoft.servicebus/namespaces",
+                  "metricResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/microsoft.servicebus/namespaces/', parameters('servicebus_name'))]",
+                  "operator": "GreaterThan",
+                  "statistic": "Average",
+                  "threshold": 75,
+                  "timeAggregation": "Average",
+                  "timeGrain": "PT1M",
+                  "timeWindow": "PT10M",
+                  "dividePerInstance": false
+                }
+              },
+              {
+                "scaleAction": {
+                  "direction": "Decrease",
+                  "type": "ServiceAllowedNextValue",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                },
+                "metricTrigger": {
+                  "metricName": "NamespaceCpuUsage",
+                  "metricNamespace": "microsoft.servicebus/namespaces",
+                  "metricResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/microsoft.servicebus/namespaces/', parameters('servicebus_name'))]",
+                  "operator": "LessThan",
+                  "statistic": "Average",
+                  "threshold": 30,
+                  "timeAggregation": "Average",
+                  "timeGrain": "PT1M",
+                  "timeWindow": "PT10M",
+                  "dividePerInstance": false
+                }
+              },
+              {
+                "scaleAction": {
+                  "direction": "Decrease",
+                  "type": "ServiceAllowedNextValue",
+                  "value": "1",
+                  "cooldown": "PT5M"
+                },
+                "metricTrigger": {
+                  "metricName": "NamespaceMemoryUsage",
+                  "metricNamespace": "microsoft.servicebus/namespaces",
+                  "metricResourceUri": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_ResourceGroupName'), '/providers/microsoft.servicebus/namespaces/', parameters('servicebus_name'))]",
+                  "operator": "LessThan",
+                  "statistic": "Average",
+                  "threshold": 50,
+                  "timeAggregation": "Average",
+                  "timeGrain": "PT1M",
+                  "timeWindow": "PT10M",
+                  "dividePerInstance": false
+                }
+              }
+            ]
+          }
+        ],
+        "notifications": [
+            {
+                "operation": "Scale",
+                "email": {
+                    "sendToSubscriptionAdministrator": true,
+                    "sendToSubscriptionCoAdministrators": true,
+                    "customEmails": [
+                        "serguei.komarov@shiftwise.com",
+                        "devops@shiftwise.com"
+                    ]
+                },
+                "webhooks": []
+            }
+        ],
+        "targetResourceLocation": "[if(or(equals(parameters('environment'), 'TEST_DR'), equals(parameters('environment'), 'PROD_DR'), equals(parameters('environment'), 'INT_DR')), parameters('DR_location'), parameters('location'))]"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+search_service_name                                     = "co-wus2-tftest-acs-t01"
+location                                                = "westus2"
+search_service_sku                                      = "standard"
+search_service_replica_count                            = "3"
+search_service_partition_count                          = "1"
+search_service_authentication_failure_mode              = null
+search_service_customer_managed_key_enforcement_enabled = false
+search_service_local_authentication_enabled             = true
+search_service_hosting_mode                             = "default"
+search_service_public_network_access_enabled            = true
+search_service_identity                                 = "SystemAssigned"
+search_service_allowed_ips                              = []
+tags = {
+  charge-to       = "101-71200-5000-9500",
+  environment     = "test",
+  application     = "Platform Services",
+  product         = "Platform Services",
+  amnonecomponent = "shared",
+  role            = "infrastructure-tf-unit-test",
+  managed-by      = "cloud.engineers@amnhealthcare.com",
+  owner           = "cloud.engineers@amnhealthcare.com"
+}

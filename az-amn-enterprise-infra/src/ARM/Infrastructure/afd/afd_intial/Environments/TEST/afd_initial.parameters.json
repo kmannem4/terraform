@@ -1,0 +1,25 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "frontDoorName": {
+            "value": "amn-wus2-hub-afd-t01"
+        },
+        "wafName": {
+            "value": "AMNHubFrontDoorWAFt01"
+        },
+        "apigatewayaddress": {
+            "value": "apigateway.test.ttm.amnhealthcare.com"
+        },
+        "location": {
+            "value": "global"
+        },
+        "tagsArray": {
+            "value": {
+              "charge-to": "101-71200-5000-9500",
+              "role": "infrastructure",
+              "environment": "test"
+            }
+        }
+    }
+}

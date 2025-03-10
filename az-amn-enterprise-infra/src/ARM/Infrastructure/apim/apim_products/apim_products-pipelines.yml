@@ -1,0 +1,58 @@
+# Pipeline file structure: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
+# Task List: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks
+
+name: "2.0$(rev:.r)"
+
+resources:
+  - repo : self
+  
+trigger:
+   batch: true
+   branches:
+    include:
+      - /*
+   paths :
+    include:
+    - src/ARM/Infrastructure/apim/apim_products/*
+variables:
+ - group: "AMN_IPS_INFRA"
+stages:
+- stage : Build
+  jobs:
+  - template : /Azure-pipelines/build-steps.yml
+- stage : Deploying_to_TEST_env
+  displayName: Deploying_to_TEST
+  dependsOn: Build
+  variables :
+  - template : /Azure-pipelines/Test_variables.yaml
+  jobs :
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+      - task: ManualValidation@0
+        timeoutInMinutes: 1440 # task times out in 1 day
+        inputs:
+          notifyUsers: |
+            harshith.vangaveti@shiftwise.com
+            karthik.mannem@shiftwise.com
+          instructions: 'Please Review deployment to Test environment'
+          onTimeout: 'reject'    
+
+  - deployment: apimgwdeployment
+    displayName: apim Deployment
+    dependsOn: waitForValidation
+    workspace:
+      clean: all 
+    environment :  'TEST'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'apim/apim_products'
+               resource_template_name : 'apim_products.template.json'
+               resource_param_name : 'apim_products.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV'

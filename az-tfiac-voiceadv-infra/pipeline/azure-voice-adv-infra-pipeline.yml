@@ -1,0 +1,32 @@
+parameters:
+  - name: environment
+    displayName: Environment
+    type: string
+    default: dev
+    values:
+    - dev
+    - qa
+    - prod
+
+trigger: none
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: "Shared Services/amn-az-tf-common-pipelines"
+
+name: amn-az-tfiac-voiceadv-infra
+extends:
+  template: templates/extend/infra-foundation-deployment.yml@templates
+  parameters:
+    vertical: stfing
+    environment: ${{ parameters.environment }}
+    ${{ if in(parameters.environment, 'dev')}}:
+      resourceFile: environments/dev/dev.tfvars
+    ${{ if in(parameters.environment, 'qa')}}:
+      resourceFile: environments/qa/qa.tfvars
+    ${{ if in(parameters.environment, 'prod')}}:
+      resourceFile: environments/dev/prod.tfvars
+
+    

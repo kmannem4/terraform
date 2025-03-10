@@ -1,0 +1,25 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceName": {
+            "value": "AMNHubFrontDoorWAFtd02"
+        },
+        "DenyNonAMNTraffic_enablestate": {
+            "value": "Enabled"
+        },
+        "managedrules_action": {
+            "value": "Log"
+        },
+        "location": {
+            "value": "global"
+        },
+        "tagsArray": {
+            "value": {
+              "charge-to": "101-71200-5000-9500",
+              "role": "infrastructure",
+              "environment": "Team-D"
+            }
+        }
+    }
+}

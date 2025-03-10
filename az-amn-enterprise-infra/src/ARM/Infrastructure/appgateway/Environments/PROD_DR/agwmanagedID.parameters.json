@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "userAssignedIdentities_name": {
+      "value": "amn-wcus-hub-agw-mgid-p01"
+    },
+    "AMN_HUB_keyvault_ResourceGroup": {
+      "value": "amn-wus2-hub-rg-p01"
+    },
+    "AMN_HUB_KeyVaultName": {
+      "value": "amn-wus2-hub-kv-p01"
+    },
+    "location": {
+      "value": "westcentralus"
+    },
+    "tagsArray": {
+      "value": {
+        "role": "infrastructure",
+        "environment": "PROD_DR"
+      }
+    }
+  }
+}

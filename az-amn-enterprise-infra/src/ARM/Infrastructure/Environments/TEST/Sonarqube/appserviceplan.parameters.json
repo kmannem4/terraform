@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "TEST"
+    },
+    "AppService_Plan_Name": {
+      "value": "amn-wus2-hub-sonar-aspl-t01"
+    },
+    "hostingEnvironment": {
+      "value": ""
+    },
+    "location": {
+      "value": "West US 2"
+    },
+    "DR_location": {
+      "value": "westcentralus"
+    },
+    "sku": {
+      "value": "PremiumV2"
+    },
+    "skuCode": {
+      "value": "P1V2"
+    },
+    "workerSize": {
+      "value": "0"
+    },
+    "workerSizeId": {
+      "value": "0"
+    },
+    "numberOfWorkers": {
+      "value": "1"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "app",
+        "environment": "test"
+      }
+    }
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "westus2"
+    },
+    "DR_location": {
+      "value": "westcentralus"
+    },
+    "environment": {
+      "value": "PROD_DR"
+    },
+    "applicationGatewayName": {
+      "value": "amn-wcus-hub-agw-p01"
+    },
+    "tier": {
+      "value": "Standard_v2"
+    },
+    "skuSize": {
+      "value": "Standard_v2"
+    },
+    "capacity": {
+      "value": 1
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "infrastructure",
+        "environment": "prod"
+      }
+    },
+    "subnetName": {
+      "value": "amn-hub-agw-sn"
+    },
+    "fqdnname": {
+      "value": "amn-wus2-hub-apim-p01.azure-api.net"
+    },
+    "apim_fqdnname": {
+      "value": "amn-wus2-hub-apim-p02.azure-api.net"
+    },
+    "api_gateway_hostname": {
+      "value": "apigateway-wcus.amnhealthcare.io"
+    },
+    "api_all_suffixes": {
+      "value": [
+        "/floatpool/*",
+        "/clients/*",
+        "/billing/*",
+        "/ttm-billing/*",
+        "/users/*",
+        "/insights/*",
+        "/om/*",
+        "/docs/*",
+        "/sitemap/*",
+        "/event-scheduler/*",
+        "/integrations/vms/*",
+        "/candidate/*",
+        "/credentialing/*",
+        "/facility/*",
+        "/notification/*",
+        "/notificationhub/*",
+        "/order/*",
+        "/placement/*",
+        "/shared/*",
+        "/template/*",
+        "/imatch/*",
+        "/ipreference/*",
+        "/flexmobile/*",
+        "/listener/*",
+        "/packetgen/*",
+        "/onecredential/*",
+        "/local-scheduler/*",
+        "/oneamnjobsearch/*",
+        "/task/*",
+        "/sm/*",
+        "/ref/*",
+        "/um/*"
+      ]
+    },
+    "api_migration_all_suffixes": {
+      "value": [
+        "/test/*"
+      ]
+    },
+    "apim_management_backendpoolname": {
+      "value": "api-management-backend-pool"
+    },
+    "api_management_http_setting_requesttimeout": {
+      "value": "20"
+    },
+    "apim_management_backend_url": {
+      "value": "api-management.amnhealthcare.io"
+    },
+    "api-management-apigatewayhostname": {
+      "value": "api-management-gateway-wcus.amnhealthcare.io"
+    },
+    "apim_developer_portal_backendpoolname": {
+      "value": "apim-developer-portal-pool"
+    },
+    "apim_developer_portal_backend_url": {
+      "value": "api-developer.amnhealthcare.io"
+    },
+    "api_http_setting_requesttimeout": {
+      "value": "60"
+    },
+    "apim-developer-portal-apigatewayhostname": {
+      "value": "api-developer-gateway-wcus.amnhealthcare.io"
+    },
+    "apigatewayhostname": {
+      "value": "apigateway-wcus.ttm.amnhealthcare.com"
+    },
+    "apigatewayhostname-io": {
+      "value": "apigateway-wcus-ttm.amnhealthcare.io"
+    },
+    "amnone-ats-apigatewayhostname": {
+      "value": "apigateway-wcus-ats.amnhealthcare.io"
+    },
+    "ttmapiallsuffixes": {
+      "value": [
+        "/sm/*",
+        "/clients/*",
+        "/billing/*",
+        "/ttm-billing/*",
+        "/insights/*",
+        "/users/*",
+        "/om/*",
+        "/ref/*",
+        "/docs/*",
+        "/sitemap/*",
+        "/integrations/vms/*"
+      ]
+    },
+    "amnoneapiallsuffixes": {
+      "value": [
+        "/candidate/*",
+        "/credentialing/*",
+        "/facility/*",
+        "/notification/*",
+        "/notificationhub/*",
+        "/order/*",
+        "/placement/*",
+        "/shared/*",
+        "/template/*",
+        "/imatch/*",
+        "/ipreference/*",
+        "/listener/*",
+        "/packetgen/*",
+        "/oneamnjobsearch/*",
+        "/task/*"
+      ]
+    },
+    "requesttimeout": {
+      "value": "300"
+    },
+    "publicIPAddressesName": {
+      "value": "amn-wcus-hub-pip-p01"
+    },
+    "zones": {
+      "value": [
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    "privateIpAddress": {
+      "value": "10.97.16.101"
+    },
+    "managedIdentity": {
+      "value": "amn-wcus-hub-agw-mgid-p01"
+    },
+    "virtualnetworkname": {
+      "value": "amn-wcus-hub-vnet-p01"
+    },
+    "vaultResourceGroupName": {
+      "value": "amn-wus2-hub-rg-p01"
+    },
+    "Managed_ID_ResourceGroupName": {
+      "value": "amn-wcus-hub-rg-p01"
+    },
+    "keyVaultName": {
+      "value": "amn-wus2-hub-kv-p01"
+    },
+    "ttm_sslCertName": {
+      "value": "wildcard-ttm-amnhealthcare-com"
+    },
+    "amnonesslCertNameio": {
+      "value": "wildcard-amnhealthcare-io"
+    },
+    "autoScaleMaxCapacity": {
+      "value": 10
+    }
+  }
+}

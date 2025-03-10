@@ -1,0 +1,200 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "additionallocation": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "subnetname": {
+            "type": "string"
+        },
+        "dr_vnet_ResourceGroupName": {
+            "type": "string"
+        },
+        "dr_virtualNetworkName": {
+            "type": "string"
+        },
+        "dr_subnetname": {
+            "type": "string"
+        },
+        "api_developer_dns": {
+            "type": "string"
+        },
+        "api_management_dns": {
+            "type": "string"
+        },
+        "atsdns": {
+            "type": "string"
+        },
+        "apidns": {
+            "type": "string"
+        },
+        "idpdns": {
+            "type": "string"
+        },
+        "vaultResourceGroupName": {
+            "type": "string"
+        },
+        "keyVaultName": {
+            "type": "string"
+        },
+        "amnonesslCertNameio": {
+            "type": "string"
+        },
+        "adminEmail": {
+            "type": "string"
+        },
+        "orgName": {
+            "type": "string"
+        },
+        "tier": {
+            "type": "string"
+        },
+        "capacity": {
+            "type": "int"
+        },
+        "loggerName": {
+            "type": "string"
+        },
+        "appinsightsname": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "amnonesecretResourceIdio": "[resourceId(subscription().subscriptionId, parameters('vaultResourceGroupName'), 'Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('amnonesslCertNameio'))]",
+        "additionalLocation": [
+            {
+                "location": "[parameters('additionallocation')]",
+                "sku": {
+                    "name": "[parameters('tier')]",
+                    "capacity": "[parameters('capacity')]"
+                },
+                "virtualNetworkConfiguration": {
+                    "subnetResourceId": "[resourceId(subscription().subscriptionId, parameters('dr_vnet_ResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('dr_virtualNetworkName'), parameters('dr_subnetname'))]"
+                }
+            }
+        ]
+    },
+    "resources": [
+        {
+            "apiVersion": "2021-08-01",
+            "name": "[parameters('apimname')]",
+            "location": "[parameters('location')]",
+            "type": "Microsoft.ApiManagement/service",
+            "sku": {
+                "name": "[parameters('tier')]",
+                "capacity": "[parameters('capacity')]"
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "publisherEmail": "[parameters('adminEmail')]",
+                "publisherName": "[parameters('orgName')]",
+                "gatewayUrl": "[concat(parameters('apimname'), '.azure-api.net')]",
+                "identity": {
+                    "type": "systemAssigned"
+                },
+                "hostnameConfigurations": [
+                    {
+                        "type": "DeveloperPortal",
+                        "hostName": "[parameters('api_developer_dns')]",
+                        "keyVaultId": "[reference(variables('amnonesecretResourceIdio'), '2018-02-14').secretUri]",
+                        "negotiateClientCertificate": false,
+                        "defaultSslBinding": false
+                    },
+                    {
+                        "type": "Management",
+                        "hostName": "[parameters('api_management_dns')]",
+                        "keyVaultId": "[reference(variables('amnonesecretResourceIdio'), '2018-02-14').secretUri]",
+                        "negotiateClientCertificate": false,
+                        "defaultSslBinding": false
+                    },
+                    {
+                        "type": "Proxy",
+                        "hostName": "[parameters('atsdns')]",
+                        "keyVaultId": "[reference(variables('amnonesecretResourceIdio'), '2018-02-14').secretUri]",
+                        "negotiateClientCertificate": false,
+                        "defaultSslBinding": false
+                    },
+                    {
+                        "type": "Proxy",
+                        "hostName": "[parameters('apidns')]",
+                        "keyVaultId": "[reference(variables('amnonesecretResourceIdio'), '2018-02-14').secretUri]",
+                        "negotiateClientCertificate": false,
+                        "defaultSslBinding": false
+                    },
+                    {
+                        "type": "Proxy",
+                        "hostName": "[concat(parameters('apimname'), '.azure-api.net')]",
+                        "negotiateClientCertificate": false,
+                        "defaultSslBinding": true
+                    }
+                ],
+                "virtualNetworkType": "Internal",
+                "virtualNetworkConfiguration": {
+                    "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetname'))]"
+                },
+                "additionalLocations": "[if(equals(parameters('tier'), 'Premium'), variables('additionalLocation'), json('null'))]"
+            },
+            
+            "resources": [
+                {
+                    "apiVersion": "2021-08-01",
+                    "type": "loggers",
+                    "name": "[parameters('loggerName')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ApiManagement/service/', parameters('apimname'))]"
+                    ],
+                    "properties": {
+                        "loggerType": "applicationInsights",
+                        "resourceId": "[parameters('appinsightsname')]",
+                        "credentials": {
+                            "instrumentationKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appinsightsname')), '2020-02-02').InstrumentationKey]"
+                        }
+                    }
+                },
+                {
+                    "apiVersion": "2021-08-01",
+                    "type": "diagnostics",
+                    "name": "applicationinsights",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ApiManagement/service/', parameters('apimname'))]",
+                        "[resourceId('Microsoft.ApiManagement/service/loggers/', parameters('apimname'), parameters('loggerName'))]"
+                    ],
+                    "properties": {
+                        "loggerId": "[resourceId('Microsoft.ApiManagement/service/loggers/', parameters('apimname'), parameters('loggerName'))]",
+                        "alwaysLog": "allErrors",
+                        "sampling": {
+                            "percentage": 100,
+                            "samplingType": "fixed"
+                        }
+                    }
+                },
+                {
+                    "type": "Microsoft.ApiManagement/service/namedValues",
+                    "apiVersion": "2021-08-01",
+                    "name": "[concat(parameters('apimname'), '/ttm-identity-provider-is4-com-url')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ApiManagement/service', parameters('apimname'))]"
+                    ],
+                    "properties": {
+                        "displayName": "ttm-identity-provider-is4-url",
+                        "value": "[parameters('idpdns')]",
+                        "tags": [],
+                        "secret": false
+                    }
+                }
+            ]
+        }
+    ]
+}

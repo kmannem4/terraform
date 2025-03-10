@@ -1,0 +1,78 @@
+parameters:
+  - name: REPOSITORY_NAME
+    type: string
+    default: '$(repoName)'
+    displayName: 'Repository for pull request'
+  - name: TARGET_BRANCH_NAME
+    type: string
+    displayName: 'Target branch for pull request'
+    default: 'main'
+  - name: SOURCE_BRANCH_NAME
+    type: string
+    displayName: 'Source branch name for pull request'
+    default: 'update-readme-$(Build.BuildId)'
+
+jobs:
+  - job: CreatePullRequest
+    displayName: 'Create PR with README.md'
+    steps:
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download README.md artifact'
+        inputs:
+          source: current
+          artifact: 'Readme'
+          path: $(Pipeline.Workspace)/tfdocs
+
+      - checkout: self
+        clean: true
+        displayName: 'Checkout repository'
+
+      - script: |
+          set -e
+
+          echo "Installing Azure DevOps extension..."
+          az extension add --name azure-devops
+          az devops configure --defaults organization="$(System.TeamFoundationCollectionUri)" project="$(System.TeamProject)"
+
+          echo "Creating temporary folder..."
+          temporaryFolderPath="$(mktemp -d -t tfdocs-XXXXXXXXXX)"
+
+          branchName="${{ parameters.TARGET_BRANCH_NAME }}"
+          temporaryBranchName="${{ parameters.SOURCE_BRANCH_NAME }}"
+          repositoryName="${{ parameters.REPOSITORY_NAME }}"
+
+          echo "Cloning branch $branchName in repository $repositoryName..."
+          cloneUrl=$(az repos show --repository "$repositoryName" --query "webUrl" --output tsv)
+          git -c http.extraheader="AUTHORIZATION: Bearer $(System.AccessToken)" clone --branch "$branchName" --depth 1 "$cloneUrl" "$temporaryFolderPath"
+
+          echo "Creating temporary branch $temporaryBranchName from $branchName..."
+          cd "$temporaryFolderPath"
+          git checkout -b "$temporaryBranchName"
+
+          echo "Copying README file..."
+          cp "$(Pipeline.Workspace)/tfdocs/README.md" "$temporaryFolderPath/README.md"
+
+          echo "Checking for changes..."
+          if git diff --quiet; then
+              echo "No changes detected. Exiting."
+              exit 0
+          fi
+
+          echo "Setting git user information..."
+          git config --global user.email "azuredevopsagent@azuredevops.com"
+          git config --global user.name "Azure DevOps Agent"
+
+          echo "Committing changes..."
+          git add README.md
+          git commit -m "Update Terraform README docs"
+
+          echo "Pushing changes..."
+          git -c http.extraheader="AUTHORIZATION: Bearer $(System.AccessToken)" push origin "$temporaryBranchName"
+
+          echo "Creating pull request..."
+          az repos pr create --repository "$repositoryName" --source-branch "$temporaryBranchName" --target-branch "$branchName" --title "Update Terraform README docs" --squash --delete-source-branch "true"
+
+          echo "Execution complete."
+        displayName: 'Create Pull Request'
+        env:
+          AZURE_DEVOPS_EXT_PAT: "$(System.AccessToken)"

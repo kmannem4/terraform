@@ -1,0 +1,8 @@
+test/go.mod
+*terraform.
+.terraform*
+*.tfstate*
+*.terraform/
+test/go.sum
+go.mod
+test/vendor/*

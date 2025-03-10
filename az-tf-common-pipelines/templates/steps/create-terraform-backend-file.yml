@@ -1,0 +1,31 @@
+parameters:
+  - name: workingDirectory
+    type: string
+  - name: backendSubscriptionId
+    type: string
+    default: ""
+  - name: backendResourceGroup
+    type: string
+    default: "" 
+  - name: backendStorageAccount
+    type: string
+    default: ""
+  - name: backendStorageContainer
+    type: string
+    default: ""
+  - name: backendStorageKey
+    type: string
+    default: ""
+
+steps:
+  - task: PowerShell@2
+    displayName: Create Backend Config
+    inputs: 
+      targetType: inline
+      script: >
+
+        New-Item ${{ parameters.workingDirectory }}\terraform.backend.tf -Force
+    
+        Set-Content ${{ parameters.workingDirectory }}\terraform.backend.tf "terraform {`r`n backend ""azurerm"" {`r`n  storage_account_name = ""${{ parameters.backendStorageAccount }}""`r`n  container_name = ""${{ parameters.backendStorageContainer }}""`r`n  key = ""${{ parameters.backendStorageKey }}""`r`n  use_azuread_auth = true`r`n  subscription_id = ""${{ parameters.backendSubscriptionId }}""`r`n }`r`n }"
+  
+      failOnStderr: true

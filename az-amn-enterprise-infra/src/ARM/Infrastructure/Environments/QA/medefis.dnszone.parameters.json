@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dnszones_medefis_name": {
+      "value": "qa.medefis5.com"
+    },
+    "environemnt": {
+      "value": "QA"
+    },
+    "publicIPAddresses_amn_wus2_hub_pip_externalid": {
+      "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-q01/providers/Microsoft.Network/publicIPAddresses/amn-wus2-hub-pip-q01"
+    },
+    "publicIPAddresses_amn_wus2_hub_pip_externalid_DR": {
+      "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wcus-hub-rg-q01/providers/Microsoft.Network/publicIPAddresses/amn-wcus-hub-pip-q01"
+    },
+    "frontdoors_amn_wus2_hub_afd_externalid": {
+      "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-q01/providers/Microsoft.Network/frontdoors/amn-wus2-hub-afd-q01"
+    },
+    "medefis_apigateway_DNS": {
+      "value": "apigateway"
+    },
+    "medefis_apigateway_DNS_DR": {
+      "value": "apigateway-wcus"
+    },
+    "medefis_vms_UI_DNS": {
+      "value": "vms"
+    },
+    "medefis_mvc3_UI_DNS": {
+      "value": "www"
+    },
+    "medefis_identity_UI_DNS": {
+      "value": "identity"
+    },
+    "medefis_vms_api_DNS": {
+      "value": "api"
+    },
+    "medefis_agency_api_DNS": {
+      "value": "agencyapi"
+    }
+  }
+}

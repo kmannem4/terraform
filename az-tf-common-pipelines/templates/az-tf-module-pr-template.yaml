@@ -1,0 +1,172 @@
+# Pipeline file structure: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
+# Task List: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks
+
+parameters:
+- name: WorkingDirectory 
+  default: "$(System.DefaultWorkingDirectory)/examples"
+- name: ServiceArm
+  default: 'AMN_Shared_Dev_Staffing_dev'
+- name: VarFilePath
+  default: "$(System.DefaultWorkingDirectory)/examples/T02.tfvars"
+- name: TestDirectory
+  default: 'tests/input_validation_tests' #Test directory must be a relative path pointing to a directory local
+- name: VMImage
+  type: string
+  default: 'ubuntu-latest'
+- name: PoolName
+  type: string
+  default: ''
+- name: DependentRepositories
+  type: object
+  default: []
+- name: repoName
+  type: string
+  default: '$(repoName)'
+
+stages:
+- stage: SecurityScanningAndTestingTheModule 
+  pool:
+    ${{ if ne(parameters.PoolName, '') }}:
+      name: ${{ parameters.PoolName }}
+    ${{ else }}:
+      vmImage: ${{ parameters.VMImage }}
+  variables:
+    - name: terraformDocsVersion
+      value: '0.18.0' 
+    - group: AZ_Details
+    
+  jobs:
+  - job: SecurityScanningAndTestingTheModule
+    timeoutInMinutes: 0
+    displayName: 'Security Scanning and Testing the Module'
+    steps:
+      - checkout: self
+      - checkout: amn-az-tf-common-pipelines
+      - ${{ each dependentRepository in parameters.DependentRepositories }}:
+        - checkout: ${{ dependentRepository }}
+
+      ### Install Terraform-Docs.
+      - script: |
+          curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v$(terraformDocsVersion)/terraform-docs-v$(terraformDocsVersion)-linux-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz
+          chmod +x terraform-docs
+          $(System.DefaultWorkingDirectory)/terraform-docs --version
+        displayName: 'Install terraform-docs'
+
+      - task: replacetokens@6
+        displayName: 'Replace tokens in terraform docs configuration file'
+        inputs:
+          root: '$(Build.SourcesDirectory)/amn-az-tf-common-pipelines/configs'
+          sources: '.terraform-docs.yml'
+          tokenPattern: 'custom'
+          tokenPrefix: '__'
+          tokenSuffix: '__'
+
+      - script: |
+          cp $(Build.SourcesDirectory)/amn-az-tf-common-pipelines/configs/.terraform-docs.yml .terraform-docs.yml
+        displayName: 'Copy terraform docs config file'
+
+      - script: |
+          $(System.DefaultWorkingDirectory)/terraform-docs --output-file $(System.DefaultWorkingDirectory)/${{ parameters.repoName }}/examples/README.md --output-mode inject $(System.DefaultWorkingDirectory)/${{ parameters.repoName }}
+        displayName: 'Run terraform-docs'
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Readme'
+        inputs:
+          pathtoPublish: $(System.DefaultWorkingDirectory)/${{ parameters.repoName }}/examples/README.md
+          artifactName: Readme
+      
+      - script: |
+          pip install checkov
+        displayName: 'Install checkov'
+        condition: and(succeeded(), eq('${{ parameters.PoolName }}', ''))
+
+      - script: |
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+        displayName: 'Install TFLint'
+        condition: and(succeeded(), eq('${{ parameters.PoolName }}', ''))
+
+      - script: |
+          cp $(Build.SourcesDirectory)/amn-az-tf-common-pipelines/configs/.tflint.hcl .tflint.hcl
+        displayName: 'Copy tflint config file'
+
+      - script: |
+          tflint --init
+        displayName: 'TFLint init'
+
+      - script: |
+          tflint -f compact
+        displayName: 'TFLint compact'
+      - task: Bash@3
+        inputs:
+          targetType: 'inline'
+          workingDirectory: ${{ parameters.WorkingDirectory }}
+          script: 'checkov -d . --framework terraform -o junitxml --output-file-path $(Build.ArtifactStagingDirectory)'
+        displayName: Checkov source code scan
+        continueOnError: true
+      - task: PublishTestResults@2
+        inputs:
+          testResultsFormat: 'JUnit'
+          searchFolder: '$(Build.ArtifactStagingDirectory)'
+          testResultsFiles: '**/*results_junitxml.xml'
+          mergeTestResults: false
+          testRunTitle: Terraform source code scan
+          failTaskOnFailedTests: false
+          publishRunAttachments: true
+        displayName: Publish Test Result
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Checkov scan results'
+        inputs:
+          pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          artifactName: CodeAnalysisLogs
+
+      - task: AzureCLI@2
+        displayName: 'Initialize TF Module'
+        inputs:
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            # TODO: https://dev.azure.com/AMNEngineering/AMNOne/_sprints/backlog/Team%20Foundation/AMNOne/Foundation%20Team/Sprint%2095?workitem=337633
+            # we have to use https for the repository module integrations and not using SSH.
+            # terraform init checking for PAT to git, so using below workaround with the system access token
+            export GIT_CONFIG_PARAMETERS="'url.https://$SYSTEM_ACCESSTOKEN@dev.azure.com.insteadof=https://AMNEngineering@dev.azure.com'" 
+            terraform init
+          azureSubscription: "${{ parameters.ServiceArm }}"
+          workingDirectory: "${{ parameters.WorkingDirectory }}"
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+      - task: TerraformTaskV4@4
+        displayName: "Terraform Validate"
+        inputs:
+          provider: 'azurerm'
+          command: 'validate'
+          workingDirectory: "${{ parameters.WorkingDirectory }}"
+
+      - task: TerraformTaskV4@4
+        displayName: "Terraform Plan"
+        inputs:
+          provider: 'azurerm'
+          command: 'plan'
+          workingDirectory: "${{ parameters.WorkingDirectory }}"
+          commandOptions: '-var-file="${{ parameters.VarFilePath }}"'
+          environmentServiceNameAzureRM: "${{ parameters.ServiceArm }}"
+    
+      - task: AzureCLI@2
+        enabled: true
+        displayName: 'Terraform Test Deploy'
+        inputs:
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
+            echo "Az login success"
+
+            terraform test -var-file="${{ parameters.VarFilePath }}" -test-directory="${{ parameters.TestDirectory }}"
+
+          azureSubscription: "${{ parameters.ServiceArm }}"
+          workingDirectory: "${{ parameters.WorkingDirectory }}"
+        env:
+          ARM_CLIENT_ID: $(CLIENT-ID)
+          ARM_CLIENT_SECRET: $(CLIENT-SECRET)
+          ARM_TENANT_ID: $(TENANT-ID)

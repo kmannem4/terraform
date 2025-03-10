@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dnszonesname": {
+            "value": "dev.ttm.amnhealthcare.com"
+        },
+        "environemnt": {
+            "value": "Team-E"
+        },
+        "publicIPAddresses_amn_wus2_hub_pip_externalid": {
+            "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-te01/providers/Microsoft.Network/publicIPAddresses/amn-wus2-hub-pip-te01"
+        },
+        "publicIPAddresses_amn_wus2_hub_pip_externalid_DR": {
+            "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wcus-hub-rg-te01/providers/Microsoft.Network/publicIPAddresses/amn-wcus-hub-pip-te01"
+        },
+        "frontdoors_amn_wus2_hub_afd_externalid": {
+            "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-te01/providers/Microsoft.Network/frontdoors/amn-wus2-hub-afd-te01"
+        },
+        "frontdoors_vmsidp_externalid": {
+            "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-te01/providers/Microsoft.Network/frontdoors/amn-wus2-hub-afd-te01"
+        },
+        "ttm_apigateway_DNS": {
+            "value": "te-apigateway"
+        },
+        "ttm_api_DNS": {
+            "value": "te-api"
+        },
+        "ttm_apigateway_DNS_DR": {
+            "value": "te-apigateway-wcus"
+        },
+        "ttm_login_DNS": {
+            "value": "te-login"
+        },
+        "tagsArray": {
+            "value": {
+              "charge-to": "800-71200-0000-0000",
+              "role": "infrastructure"
+            }
+        }
+    }
+}

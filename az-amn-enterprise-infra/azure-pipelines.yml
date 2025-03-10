@@ -1,0 +1,112 @@
+# Pipeline file structure: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
+# Task List: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks
+
+name: "1.0$(rev:.r)"
+
+resources:
+  - repo: self
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - /*
+variables:
+- group: "AMN_IPS_INFRA"
+
+jobs:
+  - job: ARM_Tmplates_scan
+    displayName: ARM Tmplates scan
+    pool:
+      vmImage: "windows-latest"
+    workspace:
+      clean: all
+    steps:
+      - task: PowerShell@2
+        displayName: preparing for ARM Test Tool kit
+        inputs:
+          targetType: "inline"
+          script: |
+            # Write your PowerShell commands here.
+            mkdir -p $(Build.ArtifactStagingDirectory)/tests-results/ReportGenerator
+
+#      - task: RunARMTTKTests@1
+#        displayName: Running ARM toolkit to scan templates
+#        inputs:
+#          templatelocation: "$(System.DefaultWorkingDirectory)/src/ARM/Infrastructure/"
+#          resultLocation: "$(Build.ArtifactStagingDirectory)/tests-results/ReportGenerator"
+#          skipTests: "Template Should Not Contain Blanks,IDs Should Be Derived From ResourceIDs,ResourceIds should not contain,Resources Should Have Location,URIs Should Be Properly Constructed,Location Should Not Be Hardcoded"
+#          allTemplatesMain: false
+#          cliOutputResults: true
+
+#      - task: PublishTestResults@2
+#        displayName: publishing results from ARM toolkit
+#        condition: succeededOrFailed()
+#        inputs:
+#          testResultsFormat: "NUnit"
+#          testResultsFiles: "**/*.xml"
+#          searchFolder: "$(Build.ArtifactStagingDirectory)/tests-results/ReportGenerator"
+#          mergeTestResults: true
+  - job:
+    displayName: creating task/bug in ADO boards
+    dependsOn: ARM_Tmplates_scan
+    condition: failed()
+    pool:
+      vmImage: "windows-latest"
+    workspace:
+      clean: all
+    steps:
+      - task: Bash@3
+        displayName: setting azure devops url as default
+        inputs:
+          targetType: 'inline'
+          script: |
+            az devops configure --defaults organization=https://dev.azure.com/AMNEngineering/
+        env: 
+          AZURE_DEVOPS_EXT_PAT: $(my_pat)
+      - task: Bash@3
+        displayName: setting azure devops project as default
+        inputs:
+          targetType: 'inline'
+          script: |
+            az devops configure --defaults project="Cloud Operations"
+        env: 
+          AZURE_DEVOPS_EXT_PAT: $(my_pat)
+      - task: Bash@3
+        displayName: creating task/bug in ADO boards
+        inputs:
+          targetType: 'inline'
+          script: |
+            az boards work-item create \
+                        --title "$(Build.DefinitionName) with build number $(build.buildNumber) failed because of errors in arm templates toolkit" \
+                        --type "bug" \
+                        --area "Cloud Operations"\
+                        --iteration "Cloud Operations" \
+                        --detect true \
+                        --discussion "$(Build.DefinitionName) with build number $(build.buildNumber) failed because arm templates toolkit found errors in templates for more details please refer to build pipeline $(Build.DefinitionName) with build number $(build.buildNumber) "
+        env: 
+          AZURE_DEVOPS_EXT_PAT: $(my_pat)
+
+  - job:
+    displayName: publishing build artifacts to build output
+    dependsOn: ARM_Tmplates_scan
+    condition: succeeded()
+    pool:
+      vmImage: "windows-latest"
+    workspace:
+      clean: all
+    steps:
+      - task: CopyFiles@2
+        displayName: copying arm templates to build output filder
+        inputs:
+          SourceFolder: "$(System.DefaultWorkingDirectory)/src/"
+          Contents: "**"
+          TargetFolder: "$(Build.ArtifactStagingDirectory)"
+          CleanTargetFolder: true
+          OverWrite: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publishing Build Artifacts to build output"
+        inputs:
+          pathtoPublish: "$(Build.ArtifactStagingDirectory)"
+          artifactName: Artifacts

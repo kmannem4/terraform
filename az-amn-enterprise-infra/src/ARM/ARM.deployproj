@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|AnyCPU">
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|AnyCPU">
+      <Configuration>Release</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>61b692a5-c0d0-4f23-b95b-56ecafdc1543</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PrepareForBuildDependsOn>
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+  <Import Condition=" Exists('Deployment.targets') " Project="Deployment.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <!-- vertag<:>start tokens<:>maj.min -->
+  <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
+  <!-- vertag<:>end -->
+  <ItemGroup>
+    <None Include="public_ip.test.azuredeploy.json" />
+    <None Include="public_ip.test.parameters.json" />
+    <None Include="insights.test.azuredeploy.json" />
+    <None Include="insights.test.parameters.json" />
+    <None Include="loganalytics.test.azuredeploy.json" />
+    <None Include="loganalytics.test.parameters.json" />
+    <None Include="keyvault.test.azuredeploy.json" />
+    <None Include="keyvault.test.parameters.json" />
+    <None Include="appserviceplan.test.azuredeploy.json" />
+    <None Include="appserviceplan.test.parameters.json" />
+    <None Include="appservice.test.azuredeploy.json" />
+    <None Include="appservice.test.parameters.json" />
+    <None Include="appservice-2.test.azuredeploy.json" />
+    <None Include="appservice-2.test.parameters.json" />
+    <None Include="appserviceplanautoscale.test.azuredeploy.json" />
+    <None Include="appserviceplanautoscale.test.parameters.json" />
+    <None Include="appgw.test.azuredeploy.json" />
+    <None Include="appgw.test.parameters.json" />
+    <None Include="apim.test.azuredeploy.json" />
+    <None Include="apim.test.parameters.json" />
+    <None Include="keyvault.accesspolicy.test.azuredeploy.json" />
+    <None Include="apim.keyvault.test.azuredeploy.json" />
+    <None Include="uploadingcerts-1.ps1" />
+    <None Include="uploadingcerts-2.ps1" />
+    <Content Include="DeployEnv_Productapis_test.ps1" />
+    <None Include="public_ip.qa.azuredeploy.json" />
+    <None Include="public_ip.qa.parameters.json" />
+    <None Include="insights.qa.azuredeploy.json" />
+    <None Include="insights.qa.parameters.json" />
+    <None Include="loganalytics.qa.azuredeploy.json" />
+    <None Include="loganalytics.qa.parameters.json" />
+    <None Include="keyvault.qa.azuredeploy.json" />
+    <None Include="keyvault.qa.parameters.json" />
+    <None Include="appserviceplan.qa.azuredeploy.json" />
+    <None Include="appserviceplan.qa.parameters.json" />
+    <None Include="appservice.qa.azuredeploy.json" />
+    <None Include="appservice.qa.parameters.json" />
+    <None Include="appservice-2.qa.azuredeploy.json" />
+    <None Include="appservice-2.qa.parameters.json" />
+    <None Include="appserviceplanautoscale.qa.azuredeploy.json" />
+    <None Include="appserviceplanautoscale.qa.parameters.json" />
+    <None Include="appgw.qa.azuredeploy.json" />
+    <None Include="appgw.qa.parameters.json" />
+    <None Include="apim.qa.azuredeploy.json" />
+    <None Include="apim.qa.parameters.json" />
+    <None Include="keyvault.accesspolicy.qa.azuredeploy.json" />
+    <None Include="apim.keyvault.qa.azuredeploy.json" />
+    <None Include="uploadingcerts-1.ps1" />
+    <None Include="uploadingcerts-2.ps1" />
+    <Content Include="DeployEnv_Productapis_qa.ps1" />
+    <None Include="public_ip.int.azuredeploy.json" />
+    <None Include="public_ip.int.parameters.json" />
+    <None Include="insights.int.azuredeploy.json" />
+    <None Include="insights.int.parameters.json" />
+    <None Include="loganalytics.int.azuredeploy.json" />
+    <None Include="loganalytics.int.parameters.json" />
+    <None Include="keyvault.int.azuredeploy.json" />
+    <None Include="keyvault.int.parameters.json" />
+    <None Include="appserviceplan.int.azuredeploy.json" />
+    <None Include="appserviceplan.int.parameters.json" />
+    <None Include="appservice.int.azuredeploy.json" />
+    <None Include="appservice.int.parameters.json" />
+    <None Include="appservice-2.int.azuredeploy.json" />
+    <None Include="appservice-2.int.parameters.json" />
+    <None Include="appserviceplanautoscale.int.azuredeploy.json" />
+    <None Include="appserviceplanautoscale.int.parameters.json" />
+    <None Include="appgw.int.azuredeploy.json" />
+    <None Include="appgw.int.parameters.json" />
+    <None Include="apim.int.azuredeploy.json" />
+    <None Include="apim.int.parameters.json" />
+    <None Include="keyvault.accesspolicy.int.azuredeploy.json" />
+    <None Include="apim.keyvault.int.azuredeploy.json" />
+    <None Include="uploadingcerts-1.ps1" />
+    <None Include="uploadingcerts-2.ps1" />
+    <Content Include="DeployEnv_Productapis_int.ps1" />
+    <None Include="Deployment.targets">
+      <Visible>False</Visible>
+    </None>
+  </ItemGroup>
+  <Target Name="GetReferenceAssemblyPaths" />
+</Project>

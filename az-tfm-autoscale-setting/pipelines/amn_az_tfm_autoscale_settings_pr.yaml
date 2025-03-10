@@ -1,0 +1,51 @@
+name: '1.0$(rev:.r)'
+
+resources:
+  repositories:
+    - repository: amn-az-tf-common-pipelines
+      type: git
+      name: "Terraform/amn-az-tf-common-pipelines"
+    - repository: amn-az-tfm-resourcegroup
+      type: git
+      name: "Terraform/amn-az-tfm-resourcegroup"
+    - repository: amn-az-tfm-signalr
+      type: git
+      name: "Terraform/amn-az-tfm-signalr"
+    - repository: amn-az-tfm-service-bus
+      type: git
+      name: "Terraform/amn-az-tfm-service-bus"
+
+variables:
+  - name: moduleHeader
+    value: "Terraform module to manages a AutoScale Setting which can be applied to SignalR, Servicebus, Virtual Machine Scale Sets, App Services and other scalable resources in Azure."
+  
+  - name: exampleScenario
+    value: "Add AutoScale Setting <br /><br /> The following steps in example to using this module:<br /> - Create resource group<br /> - Create signalr<br /> - Create servicebus<br /> - Add AutoScale Settings for SignalR & Servicebus"
+
+  - template: variables/az-tf-module-common-variables.yaml@amn-az-tf-common-pipelines
+    parameters:
+      repoName: amn-az-tfm-autoscale-setting
+
+trigger:
+  - none
+
+stages:
+- template: templates/az-tf-module-pr-template.yaml@amn-az-tf-common-pipelines
+  parameters:
+    WorkingDirectory: $(workingDirectory)
+    ServiceArm: $(ServiceArm)
+    VarFilePath: '"$(workingDirectory)/$(environment)".tfvars'
+    TestDirectory: 'tests/apply_validation_tests'
+    PoolName: 'shac_linux_infra'
+    DependentRepositories:
+     - "amn-az-tfm-resourcegroup"
+     - "amn-az-tfm-signalr"
+     - "amn-az-tfm-service-bus"
+
+- stage: RaisePR
+  displayName: 'Raise PR to Default Branch'
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - template: templates/readme-pr-template.yaml@amn-az-tf-common-pipelines
+    parameters:
+      TARGET_BRANCH_NAME: 'main'  # Replace with your default branch

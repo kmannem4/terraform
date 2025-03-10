@@ -1,0 +1,617 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "frontDoorName": {
+      "value": "amn-wus2-hub-afd-q01"
+    },
+    "environment": {
+      "value": "QA"
+    },
+    "wafName": {
+      "value": "AMNHubFrontDoorWAFq01"
+    },
+    "APPS_URL": {
+      "value": "apps.qa.amnhealthcare.io"
+    },
+    "APPS_Frontendpointname": {
+      "value": "apps-qa-amnhealthcare-io"
+    },
+    "api_gateway_address": {
+      "value": "apigateway.qa.amnhealthcare.io"
+    },
+    "api_gateway_address_DR": {
+      "value": "apigateway-wcus.qa.amnhealthcare.io"
+    },
+    "api_Frontendpoint_name": {
+      "value": "api-qa-amnhealthcare-io"
+    },
+    "api_url": {
+      "value": "api.qa.amnhealthcare.io"
+    },
+    "api_backendpool_name": {
+      "value": "api-backend-pool"
+    },
+    "api_route_name": {
+      "value": "api-route"
+    },
+    "api_all_suffixes": {
+      "value": [
+        "/status-0123456789abcdef",
+        "/sm/*",
+        "/um/*",
+        "/floatpool/*",
+        "/clients/*",
+        "/billing/*",
+        "/ttm-billing/*",
+        "/users/*",
+        "/insights/*",
+        "/om/*",
+        "/ref/*",
+        "/docs/*",
+        "/sitemap/*",
+        "/event-scheduler/*",
+        "/integrations/vms/*",
+        "/candidate/*",
+        "/credentialing/*",
+        "/facility/*",
+        "/notification/*",
+        "/notificationhub/*",
+        "/order/*",
+        "/placement/*",
+        "/shared/*",
+        "/template/*",
+        "/imatch/*",
+        "/ipreference/*",
+        "/flexmobile/*",
+        "/listener/*",
+        "/packetgen/*",
+        "/onecredential/*",
+        "/local-scheduler/*",
+        "/oneamnjobsearch/*",
+        "/task/*"
+      ]
+    },
+    "ttmidpurl": {
+      "value": "authenticate.qa.amnhealthcare.io"
+    },
+    "ttmidpbackendpoolname": {
+      "value": "ttm-idp-backend-pool"
+    },
+    "ttmidproutename": {
+      "value": "ttm-idp-route"
+    },
+    "ttmidpFrontendpointname": {
+      "value": "authenticate-qa-amnhealthcare-io"
+    },
+    "ttmidp_primaryappserviceurl": {
+      "value": "amn-wus2-ttmidp-as-q01.azurewebsites.net"
+    },
+    "ttmidp_secondaryappserviceurl": {
+      "value": "amn-wus2-ttmidp-as-q01.azurewebsites.net"
+    },
+    "apigatewayaddress": {
+      "value": "apigateway.qa.ttm.amnhealthcare.com"
+    },
+    "apigatewayaddress_DR": {
+      "value": "apigateway-wcus.qa.ttm.amnhealthcare.com"
+    },
+    "Dummy_value": {
+      "value": "thisisadummyvalue.qa.amnhealthcare.io"
+    },
+    "ttminsightsuiurl": {
+      "value": "qa-insights.shiftwise.net"
+    },
+    "ttminsightsuibackendpoolname": {
+      "value": "ttm-insights-ui-backend-pool"
+    },
+    "ttminsightsuiroutename": {
+      "value": "ttm-insights-ui-route"
+    },
+    "ttminsightsuiFrontendpointname": {
+      "value": "qa-insights-shiftwise-net"
+    },
+    "primarystorageAccounturl": {
+      "value": "amnttminsightssaq01.z5.web.core.windows.net"
+    },
+    "secondarystorageAccounturl": {
+      "value": "amnttminsightssaq01-secondary.z5.web.core.windows.net"
+    },
+    "ttmordersuiurl": {
+      "value": "qa-orders.shiftwise.net"
+    },
+    "ttmordersuibackendpoolname": {
+      "value": "ttm-orders-ui-backend-pool"
+    },
+    "ttmordersuiroutename": {
+      "value": "ttm-orders-ui-route"
+    },
+    "ttmordersuiFrontendpointname": {
+      "value": "qa-orders-shiftwise-net"
+    },
+    "ttmordersUI_primarystorageAccounturl": {
+      "value": "amnttmordermanagesaq01.z5.web.core.windows.net"
+    },
+    "ttmordersUI_secondarystorageAccounturl": {
+      "value": "amnttmordermanagesaq01-secondary.z5.web.core.windows.net"
+    },
+    "ttmoneuiurl": {
+      "value": "qa-one.shiftwise.net"
+    },
+    "ttmoneuibackendpoolname": {
+      "value": "ttm-one-ui-backend-pool"
+    },
+    "ttmoneuiroutename": {
+      "value": "ttm-one-ui-route"
+    },
+    "ttmoneuiFrontendpointname": {
+      "value": "qa-one-shiftwise-net"
+    },
+    "ttmoneUI_primarystorageAccounturl": {
+      "value": "amnttmonewebsaq01.z5.web.core.windows.net"
+    },
+    "ttmoneUI_secondarystorageAccounturl": {
+      "value": "amnttmonewebsaq01-secondary.z5.web.core.windows.net"
+    },
+    "ttmflexuiurl": {
+      "value": "qa-flex.shiftwise.net"
+    },
+    "ttmflexuibackendpoolname": {
+      "value": "ttm-flex-ui-backend-pool"
+    },
+    "ttmflexuiroutename": {
+      "value": "ttm-flex-ui-route"
+    },
+    "ttmflexuiFrontendpointname": {
+      "value": "qa-flex-shiftwise-net"
+    },
+    "ttmflexUI_primarystorageAccounturl": {
+      "value": "amnttmonewebsaq01.z5.web.core.windows.net"
+    },
+    "ttmflexUI_secondarystorageAccounturl": {
+      "value": "amnttmonewebsaq01-secondary.z5.web.core.windows.net"
+    },
+    "ttmbilling_ui_url": {
+      "value": "qa-billing.shiftwise.net"
+    },
+    "ttmbilling_ui_backendpoolname": {
+      "value": "ttm-billing-ui-backend-pool"
+    },
+    "ttmbilling_ui_routename": {
+      "value": "ttm-billing-ui-route"
+    },
+    "ttmbilling_ui_Frontendpointname": {
+      "value": "qa-billing-shiftwise-net"
+    },
+    "ttmbilling_UI_primarystorageAccounturl": {
+      "value": "amnttmbillingsaq01.z5.web.core.windows.net"
+    },
+    "ttmbilling_UI_secondarystorageAccounturl": {
+      "value": "amnttmbillingsaq01-secondary.z5.web.core.windows.net"
+    },
+    "ttmusers_ui_url": {
+      "value": "qa-users.shiftwise.net"
+    },
+    "ttmusers_ui_backendpoolname": {
+      "value": "ttm-users-ui-backend-pool"
+    },
+    "ttmusers_ui_routename": {
+      "value": "ttm-users-ui-route"
+    },
+    "ttmusers_ui_Frontendpointname": {
+      "value": "qa-users-shiftwise-net"
+    },
+    "ttmusers_UI_primarystorageAccounturl": {
+      "value": "amnttmusermanagesaq01.z5.web.core.windows.net"
+    },
+    "ttmusers_UI_secondarystorageAccounturl": {
+      "value": "amnttmusermanagesaq01-secondary.z5.web.core.windows.net"
+    },
+    "ttmreferenceuiurl": {
+      "value": "qa-reference.shiftwise.net"
+    },
+    "ttmreferenceuibackendpoolname": {
+      "value": "ttm-reference-ui-backend-pool"
+    },
+    "ttmreferenceuiroutename": {
+      "value": "ttm-reference-ui-route"
+    },
+    "ttmreferenceuiFrontendpointname": {
+      "value": "qa-reference-shiftwise-net"
+    },
+    "ttmreferenceUI_primarystorageAccounturl": {
+      "value": "amnttmreferendatasaq01.z5.web.core.windows.net"
+    },
+    "ttmreferenceUI_secondarystorageAccounturl": {
+      "value": "amnttmreferendatasaq01-secondary.z5.web.core.windows.net"
+    },
+    "ttmclientuiurl": {
+      "value": "qa-client.shiftwise.net"
+    },
+    "ttmclientuibackendpoolname": {
+      "value": "ttm-client-ui-backend-pool"
+    },
+    "ttmclientuiroutename": {
+      "value": "ttm-client-ui-route"
+    },
+    "ttmclientuiFrontendpointname": {
+      "value": "qa-client-shiftwise-net"
+    },
+    "ttmclientUI_primarystorageAccounturl": {
+      "value": "amnttmclientdatasaq01.z5.web.core.windows.net"
+    },
+    "ttmclientUI_secondarystorageAccounturl": {
+      "value": "amnttmclientdatasaq01-secondary.z5.web.core.windows.net"
+    },
+    "ttmsmuiurl": {
+      "value": "qa-sm.shiftwise.net"
+    },
+    "ttmsmuibackendpoolname": {
+      "value": "ttm-sm-ui-backend-pool"
+    },
+    "ttmsmuiroutename": {
+      "value": "ttm-sm-ui-route"
+    },
+    "ttmsmuiFrontendpointname": {
+      "value": "qa-sm-shiftwise-net"
+    },
+    "ttmsmUI_primarystorageAccounturl": {
+      "value": "amnttmstaffsaq01.z5.web.core.windows.net"
+    },
+    "ttmsmUI_secondarystorageAccounturl": {
+      "value": "amnttmstaffsaq01-secondary.z5.web.core.windows.net"
+    },
+    "designuiurl": {
+      "value": "design.qa.amnhealthcare.io"
+    },
+    "designuibackendpoolname": {
+      "value": "amn-design-backend-pool"
+    },
+    "designuiroutename": {
+      "value": "amn-design-route"
+    },
+    "designuiFrontendpointname": {
+      "value": "design-amnhealthcare-io"
+    },
+    "designUI_primarystorageAccounturl": {
+      "value": "cowus2amnuicoresaq01.z5.web.core.windows.net"
+    },
+    "ttmapiallsuffixes": {
+      "value": [
+        "/status-0123456789abcdef",
+        "/sm/*",
+        "/clients/*",
+        "/billing/*",
+        "/ttm-billing/*",
+        "/insights/*",
+        "/users/*",
+        "/om/*",
+        "/ref/*",
+        "/docs/*",
+        "/sitemap/*",
+        "/integrations/vms/*"
+      ]
+    },
+    "ttminsightsapiurl": {
+      "value": "api.qa.ttm.amnhealthcare.com"
+    },
+    "ttmapibackendpoolname": {
+      "value": "ttm-api-backend-pool"
+    },
+    "ttminsightsapiroutename": {
+      "value": "ttm-api-route"
+    },
+    "ttminsightsapiFrontendpointname": {
+      "value": "api-qa-ttm-amnhealthcare-com"
+    },
+    "amnoneurlio": {
+      "value": "amnone.qa.amnhealthcare.io"
+    },
+    "amnoneurl_storage_or_appservice": {
+      "value": "cowus2amnonewebhostsaq01.z5.web.core.windows.net"
+    },
+    "amnoneFrontendpointnameio": {
+      "value": "amnone-amnhealthcare-io"
+    },
+    "amnonebackendpoolnameio": {
+      "value": "amnone-backend-pool-io"
+    },
+    "amnoneroutenameio": {
+      "value": "amnone-route-io"
+    },
+    "amnonerdurl": {
+      "value": "rd.qa.amnhealthcare.io"
+    },
+    "amnonerdFrontendpointname": {
+      "value": "rd-amnhealthcare-io"
+    },
+    "amnonerdbackendpoolname": {
+      "value": "amnone-rd-backend-pool"
+    },
+    "amnonerdroutename": {
+      "value": "amnone-rd-route"
+    },
+    "amn_rd_UI_primarystorageAccounturl": {
+      "value": "cowus2rduisaq01.z5.web.core.windows.net"
+    },
+    "amn_rd_UI_secondarystorageAccounturl": {
+      "value": "cowus2rduisaq01-secondary.z5.web.core.windows.net"
+    },
+    "amnone_ats_match_UI_url": {
+      "value": "match.qa.amnhealthcare.io"
+    },
+    "amnone_ats_match_UI_Frontendpointname": {
+      "value": "match-amnhealthcare-io"
+    },
+    "amnone_ats_match_UI_routename": {
+      "value": "amnone-match-route"
+    },
+    "amnone_ats_match_UI_backendpoolname": {
+      "value": "amnone-ats-match-backend-pool"
+    },
+    "amnone_ats_match_backend_url": {
+      "value": "co-wus2-feedbackui-as-q01.azurewebsites.net"
+    },
+    "packetgen_UI_url": {
+      "value": "packetgen.qa.amnhealthcare.io"
+    },
+    "packetgen_UI_Frontendpointname": {
+      "value": "packetgen-amnhealthcare-io"
+    },
+    "packetgen_UI_routename": {
+      "value": "packetgen-ui-route"
+    },
+    "packetgen_UI_backendpoolname": {
+      "value": "packetgen-ui-backend-pool"
+    },
+    "packetgen_backend_url": {
+      "value": "cowus2pcktgenwebsaq01.z5.web.core.windows.net"
+    },
+    "amnone_passport_dummy_UI_url": {
+      "value": "dummy-qa-www.amnpassport.com"
+    },
+    "amnone_passport_dummy_UI_Frontendpointname": {
+      "value": "dummy-qa-www-amnpassport-com"
+    },
+    "amnone_passport_UI_url": {
+      "value": "qa-www.amnpassport.com"
+    },
+    "amnone_passport_UI_Frontendpointname": {
+      "value": "qa-www-amnpassport-com"
+    },
+    "amnone_passport_UI_routename": {
+      "value": "amnone-passport-ui-route"
+    },
+    "amnone_passport_UI_backendpoolname": {
+      "value": "amnone-passport-ui-backend-pool"
+    },
+    "amnone_passport_backend_url": {
+      "value": "amncowus2pssprtwebsaq01.z5.web.core.windows.net"
+    },
+    "logistics_scheduler_UI_routename": {
+      "value": "logistics-scheduler-ui-route"
+    },
+    "logistics_scheduler_UI_backendpoolname": {
+      "value": "logistics-scheduler-ui-backend-pool"
+    },
+    "logistics_scheduler_backend_url": {
+      "value": "amnwus2schedulesaq01.z5.web.core.windows.net"
+    },
+    "logistics_scheduler_suffixes": {
+      "value": [
+        "/event-scheduler",
+        "/event-scheduler/*"
+      ]
+    },
+    "amnone_ats_API_url": {
+      "value": "ats-api.qa.amnhealthcare.io"
+    },
+    "amnone_ats_Frontendpointname": {
+      "value": "ats-amnhealthcare-io"
+    },
+    "amnone_ats_url": {
+      "value": "ats.qa.amnhealthcare.io"
+    },
+    "amnoneapiallsuffixes": {
+      "value": [
+        "/status-0123456789abcdef",
+        "/candidate/*",
+        "/credentialing/*",
+        "/facility/*",
+        "/notification/*",
+        "/notificationhub/*",
+        "/order/*",
+        "/placement/*",
+        "/shared/*",
+        "/template/*",
+        "/imatch/*",
+        "/ipreference/*",
+        "/listener/*",
+        "/packetgen/*",
+        "/oneamnjobsearch/*",
+        "/task/*"
+      ]
+    },
+    "amnone_ats_API_Frontendpointname": {
+      "value": "ats-api-amnhealthcare-io"
+    },
+    "amnone_ats_API_backendpoolname": {
+      "value": "amnone-ats-api-backend-pool"
+    },
+    "amnone_ats_API_routename": {
+      "value": "amnone-ats-api-route"
+    },
+    "amnone_ats_API_apigatewayaddress": {
+      "value": "apigateway-ats.qa.amnhealthcare.io"
+    },
+    "logistics_suffixes": {
+      "value": [
+        "/logistics",
+        "/logistics/*"
+      ]
+    },
+    "logistics_api_suffixes": {
+      "value": [
+        "/logistics/api/*"
+      ]
+    },
+    "logistics_UI_backendpoolname": {
+      "value": "logistics-backend-pool"
+    },
+    "logistics_UI_routename": {
+      "value": "logistics-route"
+    },
+    "logistics_UI_backend_url": {
+      "value": "amnlogisticssaq01.z5.web.core.windows.net"
+    },
+    "logistics_api_backendpoolname": {
+      "value": "logistics-api-backend-pool"
+    },
+    "logistics_api_routename": {
+      "value": "logistics-api-route"
+    },
+    "logistics_appservice_url": {
+      "value": "amn-wus2-logistics-as-q01.azurewebsites.net"
+    },
+    "apim_developer_Frontendpointname": {
+      "value": "api-developer-qa-amnhealthcare-io"
+    },
+    "apim_developer_url": {
+      "value": "api-developer.qa.amnhealthcare.io"
+    },
+    "apim_developer_backend_url": {
+      "value": "api-developer-gateway.qa.amnhealthcare.io"
+    },
+    "apim_developer_backendpoolname": {
+      "value": "apim-developer-portal-backend-pool"
+    },
+    "apim_developer_routename": {
+      "value": "apim-developer-portal-routing-rule"
+    },
+    "apim_management_Frontendpointname": {
+      "value": "api-management-qa-amnhealthcare-io"
+    },
+    "apim_management_url": {
+      "value": "api-management.qa.amnhealthcare.io"
+    },
+    "apim_management_backend_url": {
+      "value": "api-management-gateway.qa.amnhealthcare.io"
+    },
+    "apim_management_backendpoolname": {
+      "value": "apim-management-backend-pool"
+    },
+    "apim_management_routename": {
+      "value": "apim-management-routing-rule"
+    },
+    "sonar_UI_url": {
+      "value": "sonar.qa.amnhealthcare.io"
+    },
+    "sonar_UI_Frontendpointname": {
+      "value": "sonar-qa-amnhealthcare-io"
+    },
+    "sonar_UI_backendpoolname": {
+      "value": "sonar-ui-backend-pool"
+    },
+    "sonar_UI_routename": {
+      "value": "sonar-ui-route"
+    },
+    "sonar_UI_url_storage": {
+      "value": "amn-wus2-sonarqube-as-q01.azurewebsites.net"
+    },
+    "onecredential_ui_routename": {
+      "value": "onecredential-ui-route"
+    },
+    "onecredential_suffixes": {
+      "value": [
+        "/onecredential",
+        "/onecredential/*"
+      ]
+    },
+    "onecredential_ui_backendpoolname": {
+      "value": "amn-onecredential-ui-backend-pool"
+    },
+    "onecredential_ui_endpoint": {
+      "value": "cowus2amncrdonesaq01.z5.web.core.windows.net"
+    },
+    "local-scheduler_ui_routename": {
+      "value": "local-scheduler-ui-route"
+    },
+    "local-scheduler_suffixes": {
+      "value": [
+        "/local-scheduler",
+        "/local-scheduler/*"
+      ]
+    },
+    "local-scheduler_ui_backendpoolname": {
+      "value": "local-scheduler-ui-backend-pool"
+    },
+    "local-scheduler_ui_endpoint": {
+      "value": "cowus2schedulersaq01.z5.web.core.windows.net"
+    },
+    "avantas_wso_ui_routename": {
+      "value": "wso-ui-route"
+    },
+    "avantas_wso_suffixes": {
+      "value": [
+        "/WorkforceStrategy",
+        "/WorkforceStrategy/*"
+      ]
+    },
+    "avantas_wso_ui_backendpoolname": {
+      "value": "wso-ui-backend-pool"
+    },
+    "avantas_wso_ui_endpoint": {
+      "value": "cowus2wsoreportingsaq01.z5.web.core.windows.net"
+    },
+    "avantas_wso_api_routename": {
+      "value": "wso-api-route"
+    },
+    "avantas_wso_api_backendpoolname": {
+      "value": "wso-api-backend-pool"
+    },
+    "avantas_wso_api_endpoint": {
+      "value": "co-wus2-wsoreporting-api-q01.azurewebsites.net"
+    },
+    "firstadvantage_api_routename": {
+      "value": "firstadvantage-api-route"
+    },
+    "firstadvantage_api_backendpoolname": {
+      "value": "firstadvantage-api-backend-pool"
+    },
+    "firstadvantage_api_endpoint": {
+      "value": "co-wus2-kofaxapi-as-q01.azurewebsites.net"
+    },
+    "location": {
+      "value": "global"
+    },
+    "vaultResourceGroupName": {
+      "value": "amn-wus2-hub-rg-d01"
+    },
+    "keyVaultName": {
+      "value": "amn-wus2-hub-kv-d01"
+    },
+    "ttm_sslCertName": {
+      "value": "wildcard-qa-ttm-amnhealthcare-com"
+    },
+    "amnone_sslCertName_io": {
+      "value": "wildcard-qa-amnhealthcare-io"
+    },
+    "amnone_sslCertName": {
+      "value": "wildcard-amnhealthcare-com"
+    },
+    "amnone_io_sslCertName": {
+      "value": "wildcard-amnhealthcare-io"
+    },
+    "shiftwise_sslCertName": {
+      "value": "shiftwise-wildcard"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "managed-by": "cloud.engineers@amnhealthcare.com",
+        "product": "infrastructure",
+        "environment": "qa"
+      }
+    }
+  }
+}

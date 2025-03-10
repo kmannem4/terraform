@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apim_public_ip_name": {
+            "type": "string"
+        },
+        "apim_public_ip_sku": {
+            "type": "string"
+        },
+        "environment": {
+            "type": "string"
+        },
+        "zones": {
+            "type": "array"
+        },
+        "apim_publicIPAllocationMethod": {
+            "type": "string"
+        },
+        "apim_public_ip_idleTimeoutInMinutes": {
+            "type": "int"
+        },
+        "apim_publicIpAddressVersion": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "2023-02-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('apim_public_ip_name')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('apim_public_ip_sku')]"
+            },
+            "zones": "[if(or(equals(parameters('environment'), 'INT_DR'), equals(parameters('environment'), 'PROD_DR'), equals(parameters('environment'), 'TEST_DR')), json('null'), parameters('zones'))]",
+            "properties": {
+                "publicIPAllocationMethod": "[parameters('apim_publicIPAllocationMethod')]",
+                "idleTimeoutInMinutes": "[parameters('apim_public_ip_idleTimeoutInMinutes')]",
+                "publicIpAddressVersion": "[parameters('apim_publicIpAddressVersion')]",
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('apim_public_ip_name')]"
+                },
+                "ipTags": []
+            }
+        }
+    ]
+}

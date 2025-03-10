@@ -1,0 +1,7 @@
+variables:
+  - name: backendSubscriptionId
+    value: 9b1a0b70-5da9-4188-bf75-b5d12bb8ca24
+  - name: backendResourceGroup
+    value: co-wus2-tfstate-rg-d01
+  - name: backendStorageAccount
+    value: cowus2tfstatesad01

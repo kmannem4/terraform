@@ -1,0 +1,81 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "value": "amn-wus2-hub-apim-i02"
+        },
+        "environment": {
+            "value": "INT"
+        },
+        "apim_public_ip_name": {
+            "value": "amn-wus2-hub-apim-pip-i02"
+        },
+        "DR_apim_public_ip_name": {
+            "value": "amn-wcus-hub-apim-pip-i02"
+        },
+        "location": {
+            "value": "westus2"
+        },
+        "additionallocation": {
+            "value": "westcentralus"
+        },
+        "virtualNetworkName": {
+            "value": "amn-wus2-hub-vnet-i01"
+        },
+        "subnetname": {
+            "value": "amn-hub-migrate-apim-sn"
+        },
+        "vnet_ResourceGroupName": {
+            "value": "amn-wus2-hub-rg-i01"
+        },
+        "dr_vnet_ResourceGroupName": {
+            "value": "amn-wcus-hub-rg-i01"
+        },
+        "dr_virtualNetworkName": {
+            "value": "amn-wcus-hub-vnet-i01"
+        },
+        "dr_subnetname": {
+            "value": "amn-hub-migrate-apim-sn"
+        },
+        "api_developer_dns": {
+            "value": "api-developer.int.amnhealthcare.io"
+        },
+        "api_management_dns": {
+            "value": "api-management.int.amnhealthcare.io"
+        },
+        "atsdns": {
+            "value": "ats-api.int.amnhealthcare.io"
+        },
+        "apidns": {
+            "value": "api.int.amnhealthcare.io"
+        },
+        "vaultResourceGroupName": {
+            "value": "amn-wus2-hub-rg-p01"
+        },
+        "keyVaultName": {
+            "value": "amn-wus2-hub-kv-p01"
+        },
+        "amnonesslCertNameio": {
+            "value": "wildcard-int-amnhealthcare-io"
+        },
+        "adminEmail": {
+            "value": "Karthik.Mannem@shiftwise.com"
+        },
+        "orgName": {
+            "value": "amnhealthcare"
+        },
+        "tier": {
+            "value": "Premium"
+        },
+        "loggerName": {
+            "value": "amn-wus2-hub-appinsights-i01"
+        },
+        "appinsightsname": {
+            "value": "amn-wus2-hub-appinsights-i01"
+        },
+        "capacity": {
+            "value": 1
+        }
+    }
+}

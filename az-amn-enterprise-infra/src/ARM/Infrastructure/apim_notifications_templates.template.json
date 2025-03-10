@@ -1,0 +1,56 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ApiManagement/service/templates",
+            "apiVersion": "2022-04-01-preview",
+            "name": "[concat(parameters('apimname'), '/PurchaseDeveloperNotificationMessage')]",
+            "properties": {
+                "subject": "Your subscription to the $ProdName",
+                "body": "<!DOCTYPE html >\r\n<html>\r\n  <head />\r\n  <body>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">Greetings $DevFirstName $DevLastName!</p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">\r\n          Thank you for subscribing to the <a href=\"https://$DevPortalUrl/product#product=$ProdId\"><strong>$ProdName</strong></a> API and welcome to the AMN Healthcare developer community. We are delighted to have you as part of the team and are looking forward to the amazing applications you will build using our API!\r\n        </p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">Below are a few subscription details for your reference:</p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">\r\n      <ul>\r\n            #if ($SubStartDate != \"\")\r\n            <li style=\"font-size:12pt;font-family:'Segoe UI'\">Start date: $SubStartDate</li>\r\n            #end\r\n      </ul>\r\n    </p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">\r\n            Visit the developer <a href=\"https://$DevPortalUrl/profile\">profile area</a> to manage your subscription and subscription keys.\r\n        </p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">A couple of pointers to help get you started:</p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">\r\n      <strong>\r\n        Learn about the API\r\n      </strong>\r\n    </p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">The API documentation provides all information necessary to make a request and to process a response. Code samples are provided per API operation in a variety of languages. Moreover, an interactive console allows making API calls directly from the developer portal without writing any code.</p>\r\n\r\n\t<p style=\"font-size:12pt;font-family:'Segoe UI'\">\r\n\t\tIf you have an issue or question, feel free to reach out to our support team at <a href=\"mailto:vmsl2support-dl@amnhealthcare.com\">vmsl2support-dl@amnhealthcare.com</a>. \r\n    </p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">Sincerely,</p>\r\n    <p style=\"font-size:12pt;font-family:'Segoe UI'\">The AMN Healthcare API Team</p>\r\n  </body>\r\n</html>",
+                "title": "New subscription activated",
+                "description": "Developers receive this acknowledgement email after subscribing to a product.",
+                "parameters": [
+                    {
+                        "name": "DevFirstName",
+                        "title": "Developer first name"
+                    },
+                    {
+                        "name": "DevLastName",
+                        "title": "Developer last name"
+                    },
+                    {
+                        "name": "ProdId",
+                        "title": "Product ID"
+                    },
+                    {
+                        "name": "ProdName",
+                        "title": "Product name"
+                    },
+                    {
+                        "name": "OrganizationName",
+                        "title": "Organization name"
+                    },
+                    {
+                        "name": "SubStartDate",
+                        "title": "Subscription start date"
+                    },
+                    {
+                        "name": "SubTerm",
+                        "title": "Subscription term"
+                    },
+                    {
+                        "name": "DevPortalUrl",
+                        "title": "Developer portal URL"
+                    }
+                ]
+            }
+        }
+    ]
+}

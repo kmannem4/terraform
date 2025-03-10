@@ -1,0 +1,43 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "vaultName": {
+        "value": "amn-wus2-hub-kv-d01"
+      },
+      "location": {
+        "value": "westus2"
+      },
+      "appGatewayIdentityName": {
+        "value": "amn-wus2-hub-agw-mgid-d01"
+      },
+      "softDeleteRetentionInDays": {
+        "value": 30
+      },
+      "enablePurgeProtection": {
+        "value": true
+      },
+      "resourceid": {
+        "value": "/subscriptions/43c5a646-c00c-4c59-a332-df854c5dd08c/resourcegroups/co-wus2-enterprisemonitor-rg-s01/providers/microsoft.operationalinsights/workspaces/amn-co-wus2-enterprisemonitor-loga-d01"
+      },
+      "settingName": {
+        "value": "amn-co-wus2-enterprisemonitor-loga-d01-hub-kv-diagset-d01"
+      },
+      "objectID": {
+        "value": {
+          "AZ_SW_KeyVault_Full": "bd461b17-3b48-4737-80f4-73794fa5818f",
+          "AZ_AMN_KeyVault_Full": "c0aa4957-674a-402e-b09b-42676591c3cc",
+          "AMN_IPS": "8854cb1e-f3ad-404d-8231-ea6cd5153807",
+          "Microsoft_Azure_Frontdoor": "1464187a-280c-49bf-a70c-af81dc74fa32",
+          "Karthik_Mannem": "ee1a1002-374a-4f47-bf6d-be44c2ad7dc9"
+        }
+      },
+      "tagsArray": {
+        "value": {
+          "charge-to": "101-71200-5000-9500",
+          "role": "infrastructure",
+          "environment": "dev"
+        }
+      }
+    }
+  }

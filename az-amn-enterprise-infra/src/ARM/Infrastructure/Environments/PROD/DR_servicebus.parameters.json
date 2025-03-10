@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "PROD_DR"
+    },
+    "servicebus_name": {
+      "value": "amn-wcus-hub-sbns-p01"
+    },
+    "AMN_HUB_subscriptionId": {
+      "value": "06ab2c80-382c-478f-bcd5-5e1afe984092"
+    },
+    "DR_AMN_HUB_ResourceGroupName": {
+      "value": "amn-wcus-hub-rg-p01"
+    },
+    "DR_AMN_HUB_servicebus_name": {
+      "value": "amn-wcus-hub-sbns-p01"
+    },
+    "disasterRecoveryConfig_name": {
+      "value": "amn-enterprise-bus-p01"
+    },
+    "location": {
+      "value": "westus2"
+    },
+    "DR_location": {
+      "value": "westcentralus"
+    },
+    "skuName": {
+      "value": "Premium"
+    },
+    "skuTier": {
+      "value": "Premium"
+    },
+    "skuCapacity": {
+      "value": 1
+    },
+    "TopicsmaxMessageSizeInKilobytes": {
+      "value": 1024
+    },
+    "FirstLevelTopicSizeinMegabytes": {
+      "value": 10240
+    },
+    "SecondLevelTopicSizeinMegabytes": {
+      "value": 5120
+    },
+    "zoneRedundant": {
+      "value": false
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "800-71200-0000-0000",
+        "role": "infrastructure",
+        "environment": "PROD"
+      }
+    },
+    "defaultMessageTimeToLive": {
+      "value": "P7D"
+    },
+    "deadLetteringOnMessageExpiration": {
+      "value": true
+    }
+  }
+}

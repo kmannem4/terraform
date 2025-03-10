@@ -1,0 +1,1535 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "servicebus_name": {
+      "type": "string"
+    },
+    "AMN_HUB_subscriptionId": {
+      "type": "string"
+    },
+    "DR_AMN_HUB_ResourceGroupName": {
+      "type": "string"
+    },
+    "DR_AMN_HUB_servicebus_name": {
+      "type": "string"
+    },
+    "disasterRecoveryConfig_name": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "DR_location": {
+      "type": "string"
+    },
+    "skuName": {
+      "type": "string"
+    },
+    "skuTier": {
+      "type": "string"
+    },
+    "skuCapacity": {
+      "type": "int"
+    },
+    "zoneRedundant": {
+      "type": "bool"
+    },
+    "TopicsmaxMessageSizeInKilobytes": {
+      "type": "int"
+    },
+    "FirstLevelTopicSizeinMegabytes": {
+      "type": "int"
+    },
+    "SecondLevelTopicSizeinMegabytes": {
+      "type": "int"
+    },
+    "tagsArray": {
+      "type": "object"
+    },
+    "defaultMessageTimeToLive": {
+      "type": "string"
+    },
+    "deadLetteringOnMessageExpiration": {
+      "type": "bool"
+    },
+    "subscriptionMaxDeliveryCount": {
+      "type": "int"
+    }
+  },
+  "variables": {
+    "DR_AMN_HUB_servicebus_ID": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('DR_AMN_HUB_ResourceGroupName'), '/providers/Microsoft.ServiceBus/namespaces/', parameters('DR_AMN_HUB_servicebus_name'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2021-11-01",
+      "name": "[parameters('servicebus_name')]",
+      "location": "[if(or(equals(parameters('environment'), 'INT_DR'), equals(parameters('environment'), 'PROD_DR'), equals(parameters('environment'), 'TEST_DR')), parameters('DR_location'), parameters('location'))]",
+      "tags": "[parameters('tagsArray')]",
+      "sku": {
+        "name": "[parameters('skuName')]",
+        "tier": "[parameters('skuTier')]",
+        "capacity": "[parameters('skuCapacity')]"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "minimumTlsVersion": "1.2",
+        "zoneRedundant": "[parameters('zoneRedundant')]",
+        "publicNetworkAccess": "Enabled",
+        "disableLocalAuth": false
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'))]",
+      "type": "Microsoft.ServiceBus/namespaces/disasterRecoveryConfigs",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/', parameters('disasterRecoveryConfig_name'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "partnerNamespace": "[variables('DR_AMN_HUB_servicebus_ID')]"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "maxMessageSizeInKilobytes": "[parameters('TopicsmaxMessageSizeInKilobytes')]",
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "maxSizeInMegabytes": "[parameters('FirstLevelTopicSizeinMegabytes')]",
+        "requiresDuplicateDetection": false,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "enableBatchedOperations": true,
+        "status": "Active",
+        "supportOrdering": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToOrderingTopic')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "forwardTo": "ordering"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToStaffingTopic')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "forwardTo": "staffing"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToOrderingTopic/OrderingLabelFilter')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'enterprise', 'ForwardToOrderingTopic')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE '%.ordering.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToStaffingTopic/StaffingLabelFilter')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'enterprise', 'ForwardToStaffingTopic')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE '%.staffing.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "maxMessageSizeInKilobytes": "[parameters('TopicsmaxMessageSizeInKilobytes')]",
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "maxSizeInMegabytes": "[parameters('SecondLevelTopicSizeinMegabytes')]",
+        "requiresDuplicateDetection": true,
+        "duplicateDetectionHistoryTimeWindow": "PT20S",
+        "enableBatchedOperations": true,
+        "status": "Active",
+        "supportOrdering": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/FloatPoolReceiver')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/FloatPoolReceiver/All')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'FloatPoolReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE '%floatpool.events.ordering%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/FloatPoolSwReceiver')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/FloatPoolSwReceiver/All-ShiftWise-Events')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'FloatPoolSwReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amnhealthcare.events.vms.shiftwise.ordering.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/AMIEAtsReceiver')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/ShiftWiseVmsReceiver')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/Wiretap')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT5S",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P1D",
+        "deadLetteringOnMessageExpiration": false,
+        "deadLetteringOnFilterEvaluationExceptions": false,
+        "maxDeliveryCount": 2,
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/ShiftWiseVmsReceiver/AMIE-Events')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'ShiftWiseVmsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.sessionId IS NOT NULL AND sys.label IN ('com.amnhealthcare.events.ats.amie.ordering.PlacementSentToFacility','com.amnhealthcare.events.ats.amie.ordering.PlacementStaffInterviewed','com.amnhealthcare.events.ats.amie.ordering.PlacementOfferedByFacility','com.amnhealthcare.events.ats.amie.ordering.PlacementDeclinedByFacility','com.amnhealthcare.events.ats.amie.ordering.PlacementDeclinedByStaff','com.amnhealthcare.events.ats.amie.ordering.PlacementDeclinedByVendor','com.amnhealthcare.events.ats.amie.ordering.PlacementConfirmedByStaff','com.amnhealthcare.events.ats.amie.ordering.PlacementBooked','com.amnhealthcare.events.ats.amie.ordering.PlacementCancelledByFacility','com.amnhealthcare.events.ats.amie.ordering.PlacementCancelledByVendor','com.amnhealthcare.events.ats.amie.ordering.PlacementCancelledByStaff')",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/AMIEAtsReceiver/ShiftWiseVms-Events')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'AMIEAtsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.sessionId IS NOT NULL AND sys.label LIKE 'com.amnhealthcare.events.vms.shiftwise.ordering.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/packetgen-subpacketauto-updater-function')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT90S",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P14D",
+        "deadLetteringOnMessageExpiration": true,
+        "deadLetteringOnFilterEvaluationExceptions": false,
+        "maxDeliveryCount": 10,
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/packetgen-subpacketauto-updater-function/PacketGen-PlacementPacketRequestedReciever')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'packetgen-subpacketauto-updater-function')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amnhealthcare.events.ats.amie.ordering.PlacementPacketRequested'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/amieweb-subpacketauto-updater-function')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT90S",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "P14D",
+        "deadLetteringOnMessageExpiration": true,
+        "deadLetteringOnFilterEvaluationExceptions": false,
+        "maxDeliveryCount": 10,
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/amieweb-subpacketauto-updater-function/AMIEWeb-PlacementPacketCreatedReciever')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'amieweb-subpacketauto-updater-function')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amnhealthcare.events.ats.amie.ordering.PlacementPacketCreated'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "maxMessageSizeInKilobytes": "[parameters('TopicsmaxMessageSizeInKilobytes')]",
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "maxSizeInMegabytes": "[parameters('SecondLevelTopicSizeinMegabytes')]",
+        "requiresDuplicateDetection": true,
+        "duplicateDetectionHistoryTimeWindow": "PT20S",
+        "enableBatchedOperations": true,
+        "status": "Active",
+        "supportOrdering": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/FloatPoolReceiver')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/FloatPoolReceiver/All')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'staffing', 'FloatPoolReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE '%floatpool.events.staffing%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/AmieAtsReceiver')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/AMIEAtsReceiver/ShiftWiseVms-Events')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'staffing', 'AMIEAtsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.sessionId IS NOT NULL AND sys.label LIKE 'com.amnhealthcare.events.vms.shiftwise.staffing.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/AMIEAtsReceiver/StaffEmergencyContactChanged')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'staffing', 'AMIEAtsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ems.amn.staffing.StaffEmergencyContactChanged"
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/ShiftWiseVmsReceiver')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/ShiftWiseVmsReceiver/AMIE-Events')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'staffing', 'ShiftWiseVmsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.sessionId IS NOT NULL AND sys.label LIKE 'com.amnhealthcare.events.ats.amie.staffing.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/Wiretap')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT5S",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P1D",
+        "deadLetteringOnMessageExpiration": false,
+        "deadLetteringOnFilterEvaluationExceptions": false,
+        "maxDeliveryCount": 2,
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/logistics')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "maxMessageSizeInKilobytes": "[parameters('TopicsmaxMessageSizeInKilobytes')]",
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "maxSizeInMegabytes": "[parameters('SecondLevelTopicSizeinMegabytes')]",
+        "requiresDuplicateDetection": true,
+        "duplicateDetectionHistoryTimeWindow": "PT20S",
+        "enableBatchedOperations": true,
+        "status": "Active",
+        "supportOrdering": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/Wiretap')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'logistics')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT5S",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P1D",
+        "deadLetteringOnMessageExpiration": false,
+        "deadLetteringOnFilterEvaluationExceptions": false,
+        "maxDeliveryCount": 2,
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToLogisticsTopic')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'logistics')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "forwardTo": "logistics"
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToLogisticsTopic/LogisticsLabelFilter')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'enterprise', 'ForwardToLogisticsTopic')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE '%.logistics.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/AMIEAtsReceiver/EmsEvents')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'AMIEAtsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amnhealthcare.events.ems.amn.ordering.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "maxMessageSizeInKilobytes": "[parameters('TopicsmaxMessageSizeInKilobytes')]",
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "maxSizeInMegabytes": "[parameters('SecondLevelTopicSizeinMegabytes')]",
+        "requiresDuplicateDetection": true,
+        "duplicateDetectionHistoryTimeWindow": "PT20S",
+        "enableBatchedOperations": true,
+        "status": "Active",
+        "supportOrdering": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToClientManagementTopic')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT30S",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": true,
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "forwardTo": "clientmanagement"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToClientManagementTopic/ClientManagementLabelFilter')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'enterprise', 'ForwardToClientManagementTopic')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE '%.clientmanagement.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/Wiretap')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT30S",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P1D",
+        "deadLetteringOnMessageExpiration": false,
+        "deadLetteringOnFilterEvaluationExceptions": false,
+        "maxDeliveryCount": 2,
+        "status": "Active",
+        "enableBatchedOperations": false,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/EmsReceiver')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/EmsReceiver/$Default')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'EmsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "1=0",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/EmsReceiver/LaborStrikeEventAffiliateCreated')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'EmsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ats.amie.clientmanagement.LaborStrikeEventAffiliateCreated"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/EmsReceiver/LaborStrikeEventFacilityCreated')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'EmsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ats.amie.clientmanagement.LaborStrikeEventFacilityCreated"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/EmsReceiver/FacilityNameChanged')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'EmsReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ats.amie.clientmanagement.FacilityNameChanged"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/EmsReceiver/system-messages')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'EmsReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amn.messaging.system.control.%' AND sys.to = 'EmsReceiver'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver/$Default')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'PeopleSoftReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "1=0",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver/CustomerCreated')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'PeopleSoftReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.vms.shiftwise.clientmanagement.CustomerCreated"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver/FacilityCreated')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'PeopleSoftReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.vms.shiftwise.clientmanagement.FacilityCreated"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver/FacilityUnitCreated')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'PeopleSoftReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.vms.shiftwise.clientmanagement.FacilityUnitCreated"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver/RateCategoryCreated')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'PeopleSoftReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.vms.shiftwise.clientmanagement.RateCategoryCreated"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver/CustomerNameChanged')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'PeopleSoftReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.vms.shiftwise.clientmanagement.CustomerNameChanged"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver/FacilityNameChanged')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'PeopleSoftReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.vms.shiftwise.clientmanagement.FacilityNameChanged"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/clientmanagement/PeopleSoftReceiver/FacilityUnitNameChanged')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'clientmanagement', 'PeopleSoftReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'clientmanagement')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.vms.shiftwise.clientmanagement.FacilityUnitNameChanged"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/AmieAtsReceiver')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'logistics')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/AmieAtsReceiver/EmsEvents')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'logistics', 'AmieAtsReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'logistics')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amnhealthcare.events.ems.amn.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/EmsReceiver')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'ordering')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/EmsReceiver/amie-messages')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'EmsReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amnhealthcare.events.ats.amie.ordering.%' AND (sys.label LIKE '%LaborStrike%' OR sys.label LIKE '%Placement%' OR sys.label LIKE '%.StaffAcceptedItinerary')",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/ordering/EmsReceiver/system-messages')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'ordering', 'EmsReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amn.messaging.system.control.%' AND sys.to = 'EmsReceiver'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/EmsReceiver')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'staffing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/EmsReceiver/AmieEvents')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'staffing', 'EmsReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amnhealthcare.events.ats.amie.staffing.%' AND sys.label NOT LIKE '%.StaffSsnUpdated'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/staffing/EmsReceiver/system-messages')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'staffing', 'EmsReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amn.messaging.system.control.%' AND sys.to = 'EmsReceiver'",
+          "compatibilityLevel": 20
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/PassportAppReceiver')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'logistics')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/PassportAppReceiver/LaborStrikeEventStaffSchedulePublished')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'logistics', 'PassportAppReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ems.amn.logistics.LaborStrikeEventStaffSchedulePublished"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/PassportAppReceiver/LaborStrikeEventStaffSchedulingRankChanged')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'logistics', 'PassportAppReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ems.amn.logistics.LaborStrikeEventStaffSchedulingRankChanged"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/PassportAppReceiver/LaborStrikeEventStaffScheduled')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'logistics', 'PassportAppReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ems.amn.logistics.LaborStrikeEventStaffScheduled"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/PassportAppReceiver/LaborUnionStrikeTravelDatesChanged')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'logistics', 'PassportAppReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ems.amn.logistics.LaborUnionStrikeTravelDatesChanged"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/PassportAppReceiver/LaborUnionStrikeWaveAdded')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'logistics', 'PassportAppReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ems.amn.logistics.LaborUnionStrikeWaveAdded"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/logistics/PassportAppReceiver/FlightToEventBooked')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'logistics', 'PassportAppReceiver')]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "CorrelationFilter",
+        "correlationFilter": {
+          "label": "com.amnhealthcare.events.ems.amn.logistics.FlightToEventBooked"
+        }
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/credentialing')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "maxMessageSizeInKilobytes": "[parameters('TopicsmaxMessageSizeInKilobytes')]",
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "maxSizeInMegabytes": "[parameters('SecondLevelTopicSizeinMegabytes')]",
+        "requiresDuplicateDetection": true,
+        "duplicateDetectionHistoryTimeWindow": "PT20S",
+        "enableBatchedOperations": true,
+        "status": "Active",
+        "supportOrdering": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      }
+    },
+    {
+      "condition": "[or(equals(parameters('environment'), 'train'), equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'), equals(parameters('environment'), 'Team-A'), equals(parameters('environment'), 'Team-B'), equals(parameters('environment'), 'Team-C'), equals(parameters('environment'), 'Team-D'), equals(parameters('environment'), 'Team-E'))]",
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/enterprise/ForwardToCredentialingTopic')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'enterprise')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'credentialing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "forwardTo": "credentialing"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2021-11-01",
+      "name": "[concat(parameters('servicebus_name'), '/credentialing/Wiretap')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'credentialing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT5S",
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P1D",
+        "deadLetteringOnMessageExpiration": false,
+        "deadLetteringOnFilterEvaluationExceptions": false,
+        "maxDeliveryCount": 2,
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/credentialing/CredentialingOneReceiver')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'credentialing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "isClientAffine": false,
+        "lockDuration": "PT1M",
+        "requiresSession": true,
+        "defaultMessageTimeToLive": "[parameters('defaultMessageTimeToLive')]",
+        "deadLetteringOnMessageExpiration": "[parameters('deadLetteringOnMessageExpiration')]",
+        "deadLetteringOnFilterEvaluationExceptions": true,
+        "maxDeliveryCount": "[parameters('subscriptionMaxDeliveryCount')]",
+        "status": "Active",
+        "enableBatchedOperations": true,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+      "apiVersion": "2022-01-01-preview",
+      "name": "[concat(parameters('servicebus_name'), '/credentialing/CredentialingOneReceiver/CredentialingOneEvents')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('servicebus_name'), 'credentialing', 'CredentialingOneReceiver')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('servicebus_name'), 'credentialing')]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('servicebus_name'))]"
+      ],
+      "properties": {
+        "action": {},
+        "filterType": "SqlFilter",
+        "sqlFilter": {
+          "sqlExpression": "sys.label LIKE 'com.amnhealthcare.events.credentialingone.amn.%'",
+          "compatibilityLevel": 20
+        }
+      }
+    }
+  ]
+}

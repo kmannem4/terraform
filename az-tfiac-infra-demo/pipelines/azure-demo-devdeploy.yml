@@ -1,0 +1,93 @@
+name: '1.0$(rev:.r)'
+
+trigger:
+ - none
+parameters:
+- name: Deploy_dev
+  type: boolean
+  default: true
+- name: Deploy_prod
+  type: boolean
+  default: true
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: Terraform/amn-az-tf-common-pipelines
+
+stages:
+- template: templates/build_template.yml@templates
+  parameters:
+    StageName: 'Build'
+    PoolName:  <Poolname>
+
+# -----------------------------------------------------------------------------------------------------------------
+# DEV environment Plan stage 
+# -----------------------------------------------------------------
+- template: templates/plan_template.yml@templates
+  parameters:
+    StageName: 'Dev'
+    Enabled: '${{ parameters.Deploy_dev }}'
+    PoolName: <Poolname>
+    serviceConnection: <serviceConnection>
+    subscription_id: <subscription_id>
+    vertical: <vertical>
+    environment: <environment>
+    backendResourceGroup: "<backendResourceGroup>"
+    backendStorageAccount: "<backendStorageAccount>"
+    resourceFile: environments/dev/dev.tfvars
+    Terraform_VG: TerraformSecrets_Lower
+# -----------------------------------------------------------------------------------------------------------------
+# DEV environment Apply stage                                                                                      |
+# -----------------------------------------------------------------------------------------------------------------
+- template: templates/apply_template.yml@templates
+  parameters:
+    StageName: 'Dev'
+    Enabled: '${{ parameters.Deploy_dev }}'
+    PoolName: <Poolname>
+    serviceConnection: <serviceConnection>
+    subscription_id: <subscription_id>
+    vertical: <vertical>
+    environment: <environment>
+    backendResourceGroup: "<backendResourceGroup>"
+    backendStorageAccount: "<backendStorageAccount>"
+    resourceFile: environments/dev/dev.tfvars
+    Terraform_VG: TerraformSecrets_Lower
+
+# -----------------------------------------------------------------------------------------------------------------
+# PROD environment Plan stage 
+# -----------------------------------------------------------------
+- template: templates/plan_template.yml@templates
+  parameters:
+    StageName: 'Prod'
+    Enabled: '${{ parameters.Deploy_prod }}'
+    PoolName: <Poolname>
+    serviceConnection: <serviceConnection>
+    subscription_id: <subscription_id>
+    vertical: <vertical>
+    environment: <environment>
+    backendResourceGroup: "<backendResourceGroup>"
+    backendStorageAccount: "<backendStorageAccount>"
+    resourceFile: environments/prod/prod.tfvars
+    Terraform_VG: TerraformSecrets_Upper
+# -----------------------------------------------------------------------------------------------------------------
+# PROD environment Apply stage                                                                                      |
+# -----------------------------------------------------------------------------------------------------------------
+- template: templates/apply_template.yml@templates
+  parameters:
+    StageName: 'Prod'
+    Enabled: '${{ parameters.Deploy_dev }}'
+    PoolName: <Poolname>
+    serviceConnection: <serviceConnection>
+    subscription_id: <subscription_id>
+    vertical: <vertical>
+    environment: <environment>
+    backendResourceGroup: "<backendResourceGroup>"
+    backendStorageAccount: "<backendStorageAccount>"
+    resourceFile: environments/prod/prod.tfvars
+    Terraform_VG: TerraformSecrets_Upper
+
+
+
+

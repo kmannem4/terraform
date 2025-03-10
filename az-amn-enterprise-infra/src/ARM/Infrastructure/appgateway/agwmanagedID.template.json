@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "userAssignedIdentities_name": {
+      "type": "String"
+    },
+    "location": {
+      "type": "String"
+    },
+    "AMN_HUB_keyvault_ResourceGroup": {
+      "type": "String"
+    },
+    "AMN_HUB_KeyVaultName": {
+      "type": "String"
+    },
+    "tagsArray": {
+      "type": "object"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+      "apiVersion": "2018-11-30",
+      "name": "[parameters('userAssignedIdentities_name')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tagsArray')]"
+    },
+    {
+        "apiVersion": "2022-09-01",
+        "name": "keyvaultTemplate",
+        "type": "Microsoft.Resources/deployments",
+        "resourceGroup": "[parameters('AMN_HUB_keyvault_ResourceGroup')]",
+        "properties": {
+          "mode": "Incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "resources": [
+              {
+                "type": "Microsoft.KeyVault/vaults/accessPolicies",
+                "apiVersion": "2021-06-01-preview",
+                "name": "[concat(parameters('AMN_HUB_KeyVaultName'), '/add')]",
+                "properties": {
+                  "accessPolicies": [
+                    {
+                      "tenantId": "[subscription().tenantId]",
+                      "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentities_name')), '2018-11-30').principalId]",
+                      "permissions": {
+                        "keys": [
+                          "get",
+                          "list",
+                          "import"
+                        ],
+                        "secrets": [
+                          "get",
+                          "list",
+                          "set"
+                        ],
+                        "certificates": [
+                          "get",
+                          "list",
+                          "import"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+  ]
+}

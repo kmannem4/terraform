@@ -1,0 +1,21 @@
+location                                = "westus2"
+container_registry_name                 = "cowus2tftestacrt01"
+sku_name                                = "Premium"
+admin_enabled                           = true
+georeplications_location                = "west US 3"
+georeplications_zone_redundancy_enabled = false
+zone_redundancy_enabled                 = true
+public_network_access_enabled           = true
+default_action                          = "Allow"
+action                                  = "Allow"
+ip_range                                = "119.235.50.186"
+tags = {
+  charge-to       = "101-71200-5000-9500",
+  environment     = "test",
+  application     = "Platform Services",
+  product         = "Platform Services",
+  amnonecomponent = "shared",
+  role            = "infrastructure-tf-unit-test",
+  managed-by      = "cloud.engineers@amnhealthcare.com",
+  owner           = "cloud.engineers@amnhealthcare.com"
+}

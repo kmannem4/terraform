@@ -1,0 +1,391 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "apimname": {
+        "type": "string"
+      }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/starter')]",
+            "dependsOn": [ ],
+            "properties": {
+                "displayName": "Starter",
+                "description": "Subscribers will be able to run 5 calls/minute up to a maximum of 100 calls/week.",
+                "subscriptionRequired": true,
+                "approvalRequired": false,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/starter/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'starter')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/starter/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'starter')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/unlimited')]",
+            "dependsOn": [ ],
+            "properties": {
+                "displayName": "Unlimited",
+                "description": "Subscribers have completely unlimited access to the API. Administrator approval is required.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "notPublished"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/unlimited/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'unlimited')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-domain-apis')]",
+            "dependsOn": [ ],
+            "properties": {
+                "displayName": "VMS Domain APIs (Internal)",
+                "description": "VMS Domain APIs product. For internal AMN use only. Subscribers will be able to run 60 calls/minute up to a maximum of 10,000 calls/week.",
+                "subscriptionRequired": true,
+                "approvalRequired": false,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-domain-apis/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-domain-apis')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-client-management')]",
+            "dependsOn": [ ],
+            "properties": {
+                "displayName": "VMS Client Management",
+                "description": "Full access API to manage your organization, facilities, and units.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-client-management/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-client-management')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-client-management/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-client-management')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-client-status')]",
+            "dependsOn": [ ],
+            "properties": {
+                "displayName": "VMS Client Status",
+                "description": "Read access to retrieve organization, facilities, and units.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-client-status/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-client-status')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-client-status/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-client-status')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-order-management')]",
+            "dependsOn": [ ],
+            "properties": {
+                "displayName": "VMS Order Management",
+                "description": "Full access to manage your orders in our VMS system.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-order-management/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-order-management')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-order-management/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-order-management')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-order-status')]",
+            "dependsOn": [
+                
+            ],
+            "properties": {
+                "displayName": "VMS Order Status",
+                "description": "Read-only access to the information and data about your orders in our VMS system.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-order-status/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-order-status')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-order-status/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-order-status')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-user-provisioning')]",
+            "dependsOn": [
+                
+            ],
+            "properties": {
+                "displayName": "VMS User Provisioning",
+                "description": "The VMS User Provisioning integration API is based on the SCIM v2 protocol specification which provides a common user schema for provisioning.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-user-provisioning/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-user-provisioning')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-user-provisioning/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-user-provisioning')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/amnone-domain-apis-internal')]",
+            "dependsOn": [
+                
+            ],
+            "properties": {
+                "displayName": "AMNOne Domain APIs (Internal)",
+                "description": "An internal use-only product to group and publish in the developer portal all the AMNOne/AMIE2 domain APIs. Requires self-approved subscription. Subscribers will be able to run 60 calls/minute up to a maximum of 10,000 calls/week.",
+                "subscriptionRequired": true,
+                "approvalRequired": false,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/amnone-domain-apis-internal/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'amnone-domain-apis-internal')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-staff-management')]",
+            "dependsOn": [
+                
+            ],
+            "properties": {
+                "displayName": "VMS Staff Management",
+                "description": "Full access to manage your staff in our VMS system.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-staff-management/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-staff-management')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-staff-management/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-staff-management')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-staff-status')]",
+            "dependsOn": [
+                
+            ],
+            "properties": {
+                "displayName": "VMS Staff Status",
+                "description": "Read-only access to the information and data about your staff in our VMS system.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-staff-status/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-staff-status')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-staff-status/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-staff-status')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-billing')]",
+            "dependsOn": [
+                
+            ],
+            "properties": {
+                "displayName": "VMS Billing",
+                "description": "Full access to manage your billing in our VMS system.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-billing/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-billing')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-billing/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-billing')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-billing-status')]",
+            "dependsOn": [
+                
+            ],
+            "properties": {
+                "displayName": "VMS Billing Status",
+                "description": "Read-only access to the information and data about your billing in our VMS system.",
+                "subscriptionRequired": true,
+                "approvalRequired": true,
+                "subscriptionsLimit": 1,
+                "state": "published"
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-billing-status/administrators')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-billing-status')]"
+            ]
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/products/groups",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/vms-integrations-billing-status/developers')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/products', parameters('apimname'), 'vms-integrations-billing-status')]"
+            ]
+        }
+    ]
+  }

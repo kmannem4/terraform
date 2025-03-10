@@ -1,0 +1,291 @@
+trigger :
+ - none
+
+parameters:
+  - name: environment
+    type: string
+    values:
+      - dev
+      - qa
+      - prod
+ 
+  - name: vertical
+    type: string
+
+  - name : serviceConnection
+    type: string
+
+  - name: resourceFile
+    type: string
+
+  - name: terraformVersion
+    type: string
+    default: "1.3.9"
+ 
+stages:
+  - stage: "Perform_Code_Scan"
+    displayName: "Checkov - Scan Terraform Code"
+    #pool: "generic_build_vmss-linux"
+    pool : "Azure Pipelines"
+    jobs:
+      - job: "runCheckov"
+        displayName: "Checkov > Pull, Scan & Publish Scan Report"
+        steps:
+          - task: Bash@3
+            displayName: 'Obtain Host Key'
+            inputs:
+              targetType: 'inline'
+              script: |
+                ssh-keyscan ssh.dev.azure.com >> ~/.ssh/known_hosts
+                cat ~/.ssh/known_hosts
+          - task: InstallSSHKey@0
+            displayName: "Install an SSH key"
+            inputs:
+              knownHostsEntry: "ssh.dev.azure.com"
+              sshKeySecureFile: "terraform_rsa"
+              addEntryToConfig: true
+              configHostAlias: "ssh.dev.azure.com"
+              configHostname: "ssh.dev.azure.com"
+          - script: |
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+              sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+              sudo apt update
+              sudo apt install -y docker-ce docker-ce-cli containerd.io
+            displayName: 'Install Docker'
+          - bash: |
+               sudo docker pull docker.io/bridgecrew/checkov:latest
+            workingDirectory: $(System.DefaultWorkingDirectory)
+            displayName: "Pull > bridgecrew/checkov"
+          - bash: |
+              docker run --volume $(pwd):/tf bridgecrew/checkov --download-external-modules True --external-modules-download-path /tf --directory /tf --output junitxml --soft-fail > $(pwd)/TEST-CheckovReport.xml
+              ls -ltr
+              pwd
+              cat TEST-CheckovReport.xml
+            workingDirectory: $(System.DefaultWorkingDirectory)
+            displayName: "Run > checkov"
+          - task: PublishTestResults@2
+            displayName: "Publish > Checkov Scan Report"
+            condition: succeededOrFailed()
+            inputs:
+              testRunTitle: "Checkov Results"
+              failTaskOnFailedTests: true
+              mergeTestResults: false
+              publishRunAttachments: true
+              testResultsFormat: "JUnit"
+              testResultsFiles: "**/TEST-*.xml"
+              searchFolder: "$(System.DefaultWorkingDirectory)"
+          - task: Bash@3
+            displayName: 'Obtain Host Key'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cat ~/.ssh/known_hosts
+                dig ssh.dev.azure.com
+                ls -l ~/.ssh/known_hosts
+                ssh-keyscan -v ssh.dev.azure.com >> ~/.ssh/known_hosts || { echo "Failed to obtain host key for ssh.dev.azure.com"; exit 1; }
+                cat ~/.ssh/known_hosts    
+  - stage: "Terraform_Plan"
+    displayName: "Terraform_Plan_${{ lower(parameters.environment) }}"
+    dependsOn: [Perform_Code_Scan]
+    pool: "generic_build_vmss-linux"
+    variables:
+      - template: ../variables/terraform.yml
+      - name: environmentType
+        ${{ if notIn(parameters.environment, 'prod') }}:
+          value: dev
+        ${{ if in(parameters.environment, 'prod') }}: 
+          value: prod
+    jobs:
+      - job: Plan_Configuration
+        displayName: "Plan Configuration"
+        steps:
+          - task: Bash@3
+            displayName: 'Obtain Host Key'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cat ~/.ssh/known_hosts
+                dig ssh.dev.azure.com
+                ls -l ~/.ssh/known_hosts
+                ssh-keyscan -v ssh.dev.azure.com >> ~/.ssh/known_hosts || { echo "Failed to obtain host key for ssh.dev.azure.com"; exit 1; }
+                cat ~/.ssh/known_hosts    
+          - task: InstallSSHKey@0
+            displayName: "Install an SSH key"
+            inputs:
+              knownHostsEntry: "ssh.dev.azure.com"
+              sshKeySecureFile: "terraform_rsa"
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+            displayName: "Terraform Install"
+            inputs:
+              terraformVersion: latest
+          
+          # - task: AzureCLI@2
+          #   displayName: TF init
+          #   inputs:
+          #     scriptType: 'bash'
+          #     scriptLocation: 'inlineScript'
+          #     inlineScript: |
+          #       # TODO: https://dev.azure.com/AMNEngineering/AMNOne/_sprints/backlog/Team%20Foundation/AMNOne/Foundation%20Team/Sprint%2095?workitem=337633
+          #       # we have to use https for the repository module integrations and not using SSH.
+          #       # terraform init checking for PAT to git, so using below workaround with the system access token
+          #       export GIT_CONFIG_PARAMETERS="'url.https://$SYSTEM_ACCESSTOKEN@dev.azure.com.insteadof=https://AMNEngineering@dev.azure.com'" 
+          #       terraform init \
+          #         -backend-config="storage_account_name=${{ variables.backendStorageAccount }}" \
+          #         -backend-config="container_name=${{ lower(parameters.vertical) }}" \
+          #         -backend-config="key=${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}.tfstate" \
+          #         -backend-config="resource_group_name=${{ variables.backendResourceGroup }}" 
+          #     azureSubscription: "${{parameters.serviceConnection}}"
+          #     workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+          #   env:
+          #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+          - task: TerraformTaskV2@2
+            displayName: "Terraform Init"
+            inputs:
+              provider: "azurerm"
+              command: "init"
+              backendServiceArm: "${{parameters.serviceConnection}}"
+              backendAzureRmResourceGroupName: ${{ variables.backendResourceGroup }}
+              backendAzureRmStorageAccountName: ${{ variables.backendStorageAccount }}
+              backendAzureRmContainerName: ${{ lower(parameters.vertical) }}
+              backendAzureRmKey: "${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}.tfstate"
+              workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+          - task: TerraformTaskV2@2
+            displayName: "Terraform Validate"
+            inputs:
+              provider: "azurerm"
+              command: "validate"
+          - task: CmdLine@2
+            displayName: "List workingDirectory"
+            inputs:
+              script: |
+                pwd
+                echo $(System.DefaultWorkingDirectory)
+                echo ${{ lower(parameters.vertical) }}
+                ls -ltr
+                cat $(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}
+          - task: TerraformTaskV2@2
+            displayName: "Terraform Plan"
+            inputs:
+              provider: "azurerm"
+              command: "plan"
+              commandOptions: '-input=false -var-file="$(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}"'
+              workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+              environmentServiceNameAzureRM: "${{ lower(parameters.serviceConnection) }}"
+          - task: ArchiveFiles@2
+            displayName: "Create Plan Artifact"
+            inputs:
+              rootFolderOrFile: "$(Build.SourcesDirectory)"
+              includeRootFolder: false
+              archiveType: "tar"
+              tarCompression: "gz"
+              archiveFile: "$(Build.ArtifactStagingDirectory)/$(Build.BuildId).tgz"
+              replaceExistingArchive: true
+              excludePatterns: '.git/'
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Plan Artifact"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "$(Build.BuildId)-tfplan"
+              publishLocation: "Container"
+          - task: DeleteFiles@1
+            displayName: "Remove unneeded files"
+            inputs:
+              contents: |
+                .terraform
+                tfplan
+  - stage: "Terraform_Apply"
+    displayName: "Terraform_Apply_${{ lower(parameters.environment) }}"
+    dependsOn: [Terraform_Plan]
+    condition: succeeded('Terraform_Plan')
+    pool: "generic_build_vmss-linux"
+    variables:
+      - template: ../variables/terraform.yml
+      - name: environmentType
+        ${{ if notIn(parameters.environment, 'prod') }}:
+          value: dev
+        ${{ if in(parameters.environment, 'prod') }}: 
+          value: prod
+    jobs:
+      - deployment: terraform_apply
+        continueOnError: false
+        environment: "Terraform_apply_${{ lower(parameters.environment) }}"
+        timeoutInMinutes: 120
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadBuildArtifacts@0
+                  displayName: "Download Plan Artifact"
+                  inputs:
+                    artifactName: "$(Build.BuildId)-tfplan"
+                - task: ExtractFiles@1
+                  displayName: "Extract Terraform Plan Artifact"
+                  inputs:
+                    archiveFilePatterns: "$(System.ArtifactsDirectory)/$(Build.BuildId)-tfplan/$(Build.BuildId).tgz"
+                    destinationFolder: "$(System.DefaultWorkingDirectory)"
+                    cleanDestinationFolder: false
+                    overwriteExistingFiles: true
+                    cleanTargetFolder: false
+                    preservePaths: true
+                - task: Bash@3
+                  displayName: 'Obtain Host Key'
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      cat ~/.ssh/known_hosts
+                      dig ssh.dev.azure.com
+                      ls -l ~/.ssh/known_hosts
+                      ssh-keyscan -v ssh.dev.azure.com >> ~/.ssh/known_hosts || { echo "Failed to obtain host key for ssh.dev.azure.com"; exit 1; }
+                      cat ~/.ssh/known_hosts    
+                - task: InstallSSHKey@0
+                  displayName: "Install an SSH key"
+                  inputs:
+                    knownHostsEntry: "ssh.dev.azure.com"
+                    sshKeySecureFile: "terraform_rsa"
+                - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+                  displayName: "Terraform Install"
+                  inputs:
+                    terraformVersion: latest
+                - task: TerraformTaskV2@2
+                  displayName: "Terraform Init"
+                  inputs:
+                    provider: "azurerm"
+                    command: "init"
+                    backendServiceArm: "${{parameters.serviceConnection}}"
+                    backendAzureRmResourceGroupName: ${{ variables.backendResourceGroup }}
+                    backendAzureRmStorageAccountName: ${{ variables.backendStorageAccount }}
+                    backendAzureRmContainerName: ${{ lower(parameters.vertical) }}
+                    backendAzureRmKey: "${{ lower(parameters.vertical) }}-${{ lower(parameters.environment) }}.tfstate"
+                    workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+                - task: TerraformTaskV2@2
+                  displayName: "Terraform Validate"
+                  inputs:
+                    provider: "azurerm"
+                    command: "validate"
+                - task: CmdLine@2
+                  displayName: "List workingDirectory"
+                  inputs:
+                    script: |
+                      pwd
+                      echo $(System.DefaultWorkingDirectory)
+                      echo ${{ variables.backendResourceGroup }}
+                      echo ${{ lower(parameters.vertical) }}
+                      ls -ltr
+                      cat $(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}
+                - task: TerraformTaskV2@2
+                  displayName: "Terraform Plan"
+                  inputs:
+                    provider: "azurerm"
+                    command: "plan"
+                    commandOptions: '-input=false -var-file="$(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}"'
+                    workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"
+                    environmentServiceNameAzureRM: "${{ lower(parameters.serviceConnection) }}"
+                - task: TerraformTaskV2@2
+                  displayName: "Terraform Apply"
+                  inputs:
+                    provider: "azurerm"
+                    command: "apply"
+                    commandOptions: '-input=false -var-file="$(System.DefaultWorkingDirectory)/infrastructure/${{ parameters.resourceFile }}"'
+                    environmentServiceNameAzureRM: "${{ lower(parameters.serviceConnection) }}"
+                    workingDirectory: "$(System.DefaultWorkingDirectory)/infrastructure/"

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": {
+      "value": "amn-wus2-sonar-sqlserver-d01"
+    },
+    "sqlAdministratorLogin": {
+      "value": "sonaradmin_dev"
+    },
+    "sqlAdministratorLoginPassword": {
+      "value": "FmX46CKN0tPex4nX"
+    },
+    "AADGroupName": {
+      "value" : "SQL_DBAs"
+    },
+    "AADGroupObjectid": {
+      "value" : "c49c065c-f0ff-4bb5-9f6d-0dbfa3a3b8d5"
+    },
+    "tenantId": {
+      "value" : "6232c2ec-fa42-4f27-92cd-787913fba489"
+    },
+    "location": {
+      "value": "westus2"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "sqlserver",
+        "environment": "test"
+      }
+    }
+  }
+}

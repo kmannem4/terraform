@@ -1,0 +1,152 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "type": "string"
+        },
+        "environment": {
+            "type": "string"
+        },
+        "apim_platformVersion": {
+            "type": "string"
+        },
+        "AMN_HUB_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_HUB_KeyVaultName": {
+            "type": "String"
+        },
+        "location": {
+            "type": "string"
+        },
+        "additionallocation": {
+            "type": "string"
+        },
+        "adminEmail": {
+            "type": "string"
+        },
+        "orgName": {
+            "type": "string"
+        },
+        "tier": {
+            "type": "string"
+        },
+        "capacity": {
+            "type": "int"
+        },
+        "loggerName": {
+            "type": "string"
+        },
+        "appinsightsname": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "additionalLocation": [
+            {
+                "location": "[parameters('additionallocation')]",
+                "sku": {
+                    "name": "[parameters('tier')]",
+                    "capacity": "[parameters('capacity')]"
+                },
+                "platformVersion": "[parameters('apim_platformVersion')]",
+                "apiVersionConstraint": {
+                    "minApiVersion": "2021-01-01-preview"
+                }
+            }
+        ]
+    },
+    "resources": [
+        {
+            "apiVersion": "2023-05-01-preview",
+            "name": "[parameters('apimname')]",
+            "location": "[parameters('location')]",
+            "type": "Microsoft.ApiManagement/service",
+            "sku": {
+                "name": "[parameters('tier')]",
+                "capacity": "[parameters('capacity')]"
+            },
+            "identity": {
+                "type": "systemAssigned"
+            },
+            "properties": {
+                "publisherEmail": "[parameters('adminEmail')]",
+                "publisherName": "[parameters('orgName')]",
+                "platformVersion": "[parameters('apim_platformVersion')]",
+                "apiVersionConstraint": {
+                    "minApiVersion": "2021-01-01-preview"
+                },
+                "gatewayUrl": "[concat(parameters('apimname'), '.azure-api.net')]",
+                "identity": {
+                    "type": "systemAssigned"
+                },
+                "hostnameConfigurations": [],
+                "additionalLocations": "[if(or(equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST')), variables('additionalLocation'), json('null'))]"
+            },
+            
+            "resources": [
+                {
+                    "apiVersion": "2023-05-01-preview",
+                    "type": "loggers",
+                    "name": "[parameters('loggerName')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ApiManagement/service/', parameters('apimname'))]"
+                    ],
+                    "properties": {
+                        "loggerType": "applicationInsights",
+                        "resourceId": "[parameters('appinsightsname')]",
+                        "credentials": {
+                            "instrumentationKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appinsightsname')), '2020-02-02').InstrumentationKey]"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+        "apiVersion": "2022-05-01",
+        "name": "keyvaultTemplate",
+        "type": "Microsoft.Resources/deployments",
+        "resourceGroup": "[parameters('AMN_HUB_serverFarmResourceGroup')]",
+        "properties": {
+          "mode": "Incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "resources": [
+              {
+                "type": "Microsoft.KeyVault/vaults/accessPolicies",
+                "apiVersion": "2021-06-01-preview",
+                "name": "[concat(parameters('AMN_HUB_KeyVaultName'), '/add')]",
+                "properties": {
+                  "accessPolicies": [
+                    {
+                      "tenantId": "[subscription().tenantId]",
+                      "objectId": "[reference(resourceId('Microsoft.ApiManagement/service', parameters('apimname')), '2023-05-01-preview', 'Full').identity.principalId]",
+                      "permissions": {
+                        "keys": [
+                          "get",
+                          "list",
+                          "import"
+                        ],
+                        "secrets": [
+                          "get",
+                          "list",
+                          "set"
+                        ],
+                        "certificates": [
+                          "get",
+                          "list",
+                          "import"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+}

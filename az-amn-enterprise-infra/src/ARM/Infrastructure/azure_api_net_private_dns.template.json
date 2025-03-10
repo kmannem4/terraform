@@ -1,0 +1,96 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "privateDnsZones_name": {
+            "type": "String"
+        },
+        "apim_DNS": {
+            "type": "String"
+        },
+        "migration_apim_DNS": {
+            "type": "String"
+        },
+        "apimname": {
+            "type": "String"
+        },
+        "migration_apimname": {
+            "type": "String"
+        },
+        "AMN_HUB_APIM_ResourceGroup": {
+            "type": "String"
+        },
+        "AMN_HUB_subscriptionId": {
+            "type": "String"
+        },
+        "AMN_HUB_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_HUB_virtualNetworkName": {
+            "type": "String"
+        },
+        "AMN_HUB_virtualNetworkName_link": {
+            "type": "String"
+        }
+    },
+    "variables": {
+        "apim": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_APIM_ResourceGroup'), '/providers/Microsoft.ApiManagement/service/', parameters('apimname'))]",
+        "apim_migration": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_APIM_ResourceGroup'), '/providers/Microsoft.ApiManagement/service/', parameters('migration_apimname'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('privateDnsZones_name')]",
+            "location": "global",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('apim_DNS'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[reference(variables('apim'),'2019-01-01').privateIPAddresses[0]]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('migration_apim_DNS'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[reference(variables('apim_migration'),'2019-01-01').privateIPAddresses[0]]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('AMN_HUB_virtualNetworkName_link'))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_serverFarmResourceGroup'), '/providers/Microsoft.Network/virtualNetworks/', parameters('AMN_HUB_virtualNetworkName'))]"
+                }
+            }
+        }
+    ]
+}

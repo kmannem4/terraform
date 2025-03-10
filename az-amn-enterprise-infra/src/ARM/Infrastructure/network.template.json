@@ -1,0 +1,557 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSecurityGroupName": {
+      "type": "String"
+    },
+    "vnetSettings": {
+      "type": "object"
+    },
+    "location": {
+      "type": "string"
+    },
+    "resourceid": {
+      "type": "String"
+    },
+    "nsgsettingName": {
+      "type": "String"
+    },
+    "vnetsettingName": {
+      "type": "String"
+    },
+    "delegationsname" : {
+      "type" : "string"
+    },
+    "tagsArray": {
+      "type": "object"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-02-01",
+      "name": "[parameters('networkSecurityGroupName')]",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tagsArray')]",
+      "resources": [
+        {
+          "type": "Microsoft.Network/networkSecurityGroups/providers/diagnosticSettings",
+          "apiVersion": "2017-05-01-preview",
+          "name": "[concat(parameters('networkSecurityGroupName'),'/microsoft.insights/', parameters('nsgsettingName'))]",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]"
+          ],
+            "properties": {
+              "name": "[parameters('nsgsettingName')]",
+              "workspaceId": "[parameters('resourceid')]",
+              "logs": [
+                {
+                  "category": "NetworkSecurityGroupEvent",
+                  "enabled": true
+                },
+                {
+                  "category": "NetworkSecurityGroupRuleCounter",
+                  "enabled": true
+                }
+              ]
+            }
+        }
+      ],
+      "properties": {
+        "securityRules": [
+          {
+            "name": "Allow_AzureLoadBalancer",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "AzureLoadBalancer",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "Allow_InternetToGatewayManager",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "65503-65534",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "Allow_GatewayManager",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "65200-65535",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowVNetOutboundToStorage",
+            "properties": {
+              "description": "APIM dependency on Azure Storage",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "Storage",
+              "access": "Allow",
+              "priority": 500,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowVNetOutboundToSql",
+            "properties": {
+              "description": "APIM dependency access to Azure SQL endpoints",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "1433",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "Sql",
+              "access": "Allow",
+              "priority": 600,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowAzureFrontDoorToApGwSubnet",
+            "properties": {
+              "description": "Allow inbound traffic from AFD backend service tag to ApGw subnet",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "sourceAddressPrefix": "AzureFrontDoor.Backend",
+              "destinationAddressPrefix": "[parameters('vnetSettings').appTierSubnetAddessPrefix]",
+              "access": "Allow",
+              "priority": 170,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [
+                "80",
+                "443"
+              ],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowApiManagementToVNet",
+            "properties": {
+              "description": "Required management endpoint for APIM Azure portal and PowerShell",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3443",
+              "sourceAddressPrefix": "ApiManagement",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 180,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          },
+          {
+            "name": "AllowVNetToAzureAD",
+            "properties": {
+              "description": "https://docs.microsoft.com/en-us/azure/api-management/api-management-using-with-vnet#-common-network-configuration-issues",
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "AzureActiveDirectory",
+              "access": "Allow",
+              "priority": 610,
+              "direction": "Outbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2023-02-01",
+      "name": "[concat(parameters('networkSecurityGroupName'), '/Allow_AzureLoadBalancer')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "AzureLoadBalancer",
+        "destinationAddressPrefix": "*",
+        "access": "Allow",
+        "priority": 110,
+        "direction": "Inbound",
+        "sourcePortRanges": [],
+        "destinationPortRanges": [],
+        "sourceAddressPrefixes": [],
+        "destinationAddressPrefixes": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2023-02-01",
+      "name": "[concat(parameters('networkSecurityGroupName'), '/Allow_GatewayManager')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "65200-65535",
+        "sourceAddressPrefix": "*",
+        "destinationAddressPrefix": "*",
+        "access": "Allow",
+        "priority": 100,
+        "direction": "Inbound",
+        "sourcePortRanges": [],
+        "destinationPortRanges": [],
+        "sourceAddressPrefixes": [],
+        "destinationAddressPrefixes": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2023-02-01",
+      "name": "[concat(parameters('networkSecurityGroupName'), '/Allow_InternetToGatewayManager')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "protocol": "*",
+        "sourcePortRange": "*",
+        "destinationPortRange": "65503-65534",
+        "sourceAddressPrefix": "Internet",
+        "destinationAddressPrefix": "*",
+        "access": "Allow",
+        "priority": 101,
+        "direction": "Inbound",
+        "sourcePortRanges": [],
+        "destinationPortRanges": [],
+        "sourceAddressPrefixes": [],
+        "destinationAddressPrefixes": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2023-02-01",
+      "name": "[concat(parameters('networkSecurityGroupName'), '/AllowApiManagementToVNet')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "description": "Required management endpoint for APIM Azure portal and PowerShell",
+        "protocol": "TCP",
+        "sourcePortRange": "*",
+        "destinationPortRange": "3443",
+        "sourceAddressPrefix": "ApiManagement",
+        "destinationAddressPrefix": "VirtualNetwork",
+        "access": "Allow",
+        "priority": 180,
+        "direction": "Inbound",
+        "sourcePortRanges": [],
+        "destinationPortRanges": [],
+        "sourceAddressPrefixes": [],
+        "destinationAddressPrefixes": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2023-02-01",
+      "name": "[concat(parameters('networkSecurityGroupName'), '/AllowAzureFrontDoorToApGwSubnet')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "description": "Allow inbound traffic from AFD backend service tag to ApGw subnet",
+        "protocol": "TCP",
+        "sourcePortRange": "*",
+        "sourceAddressPrefix": "AzureFrontDoor.Backend",
+        "destinationAddressPrefix": "[parameters('vnetSettings').appTierSubnetAddessPrefix]",
+        "access": "Allow",
+        "priority": 170,
+        "direction": "Inbound",
+        "sourcePortRanges": [],
+        "destinationPortRanges": [
+          "80",
+          "443"
+        ],
+        "sourceAddressPrefixes": [],
+        "destinationAddressPrefixes": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2023-02-01",
+      "name": "[concat(parameters('networkSecurityGroupName'), '/AllowVNetOutboundToSql')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "description": "APIM dependency access to Azure SQL endpoints",
+        "protocol": "TCP",
+        "sourcePortRange": "*",
+        "destinationPortRange": "1433",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "destinationAddressPrefix": "Sql",
+        "access": "Allow",
+        "priority": 600,
+        "direction": "Outbound",
+        "sourcePortRanges": [],
+        "destinationPortRanges": [],
+        "sourceAddressPrefixes": [],
+        "destinationAddressPrefixes": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2023-02-01",
+      "name": "[concat(parameters('networkSecurityGroupName'), '/AllowVNetOutboundToStorage')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "description": "APIM dependency on Azure Storage",
+        "protocol": "TCP",
+        "sourcePortRange": "*",
+        "destinationPortRange": "443",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "destinationAddressPrefix": "Storage",
+        "access": "Allow",
+        "priority": 500,
+        "direction": "Outbound",
+        "sourcePortRanges": [],
+        "destinationPortRanges": [],
+        "sourceAddressPrefixes": [],
+        "destinationAddressPrefixes": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2023-02-01",
+      "name": "[concat(parameters('networkSecurityGroupName'), '/AllowVNetToAzureAD')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ],
+      "properties": {
+        "description": "https://docs.microsoft.com/en-us/azure/api-management/api-management-using-with-vnet#-common-network-configuration-issues",
+        "protocol": "TCP",
+        "sourcePortRange": "*",
+        "destinationPortRange": "443",
+        "sourceAddressPrefix": "VirtualNetwork",
+        "destinationAddressPrefix": "AzureActiveDirectory",
+        "access": "Allow",
+        "priority": 610,
+        "direction": "Outbound",
+        "sourcePortRanges": [],
+        "destinationPortRanges": [],
+        "sourceAddressPrefixes": [],
+        "destinationAddressPrefixes": []
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('vnetSettings').name]",
+      "apiVersion": "2023-02-01",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tagsArray')]",
+      "resources": [
+        {
+          "type": "Microsoft.Network/virtualNetworks/providers/diagnosticSettings",
+          "apiVersion": "2017-05-01-preview",
+          "name": "[concat(parameters('vnetSettings').name,'/microsoft.insights/', parameters('vnetsettingName'))]",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Network/virtualNetworks/', parameters('vnetSettings').name)]"
+          ],
+          "properties": {
+            "name": "[parameters('vnetsettingName')]",
+            "workspaceId": "[parameters('resourceid')]",
+            "logs": [
+              {
+                "category": "VMProtectionAlerts",
+                "enabled": true
+              }
+            ],
+            "metrics": [
+              {
+                "category": "AllMetrics",
+                "enabled": true
+              }
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetSettings').addressSpace]"
+          ]
+        },
+        "dhcpOptions": {
+          "dnsServers": []
+        },
+        "subnets": [
+          {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[parameters('vnetSettings').appTierSubnetName]",
+            "properties": {
+              "addressPrefix": "[parameters('vnetSettings').appTierSubnetAddessPrefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+              },
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.KeyVault",
+                  "locations": [
+                    "*"
+                  ]
+                }
+              ],
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          },
+          {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[parameters('vnetSettings').apimDmzTierSubnetName]",
+            "properties": {
+              "addressPrefix": "[parameters('vnetSettings').apimDmzTierSubnetAddessPrefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+              },
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Web",
+                  "locations": [
+                    "*"
+                  ]
+                }
+              ],
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          },
+          {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[parameters('vnetSettings').apim_migration_SubnetName]",
+            "properties": {
+              "addressPrefix": "[parameters('vnetSettings').apim_migration_SubnetAddessPrefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+              },
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Web",
+                  "locations": [
+                    "*"
+                  ]
+                }
+              ],
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          },
+          {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[parameters('vnetSettings').sonarasSubnetName]",
+            "properties": {
+              "addressPrefix": "[parameters('vnetSettings').sonarasSubnetAddessPrefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+              },
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Web",
+                  "locations": [
+                    "*"
+                  ]
+                }
+              ],
+              "delegations": [
+                {
+                  "name": "[parameters('delegationsname')]",
+                  "properties": {
+                    "serviceName": "Microsoft.Web/serverFarms"
+                  }
+                }
+              ],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          },
+          {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[parameters('vnetSettings').sonarSqlSubnetName]",
+            "properties": {
+              "addressPrefix": "[parameters('vnetSettings').sonarSqlSubnetAddessPrefix]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+              },
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.Sql",
+                  "locations": [
+                    "*"
+                  ]
+                }
+              ],
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          }
+        ],
+        "virtualNetworkPeerings": [],
+        "enableDdosProtection": false,
+        "enableVmProtection": false
+      },
+      "dependsOn": []
+    }
+  ]
+}

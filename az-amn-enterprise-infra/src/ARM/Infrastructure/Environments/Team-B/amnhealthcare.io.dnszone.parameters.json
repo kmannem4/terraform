@@ -1,0 +1,93 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dnszones_amnhealthcare_io_name": {
+      "value": "dev.amnhealthcare.io"
+    },
+    "environment": {
+      "value": "Team-B"
+    },
+    "publicIPAddresses_amn_wus2_hub_pip_externalid": {
+      "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-tb01/providers/Microsoft.Network/publicIPAddresses/amn-wus2-hub-pip-tb01"
+    },
+    "publicIPAddresses_amn_wus2_hub_pip_externalid_DR": {
+      "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wcus-hub-rg-tb01/providers/Microsoft.Network/publicIPAddresses/amn-wcus-hub-pip-tb01"
+    },
+    "frontdoors_amn_wus2_hub_afd_externalid": {
+      "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-tb01/providers/Microsoft.Network/frontdoors/amn-wus2-hub-afd-tb01"
+    },
+    "frontdoor_url": {
+      "value": "amn-wus2-hub-afd-tb01.azurefd.net"
+    },
+    "ttm_apigateway_DNS": {
+      "value": "tb-apigateway-ttm"
+    },
+    "api_gateway_DNS": {
+      "value": "tb-apigateway"
+    },
+    "api_gateway_DNS_DR": {
+      "value": "tb-apigateway-wcus"
+    },
+    "amnone_ats_apigateway_DNS": {
+      "value": "tb-apigateway-ats"
+    },
+    "ttm_apigateway_DNS_DR": {
+      "value": "tb-apigateway-wcus-ttm"
+    },
+    "api_management_apigateway_DNS": {
+      "value": "tb-api-management-gateway"
+    },
+    "api_developer_apigateway_DNS": {
+      "value": "tb-api-developer-gateway"
+    },
+    "api_management_apigateway_DNS_DR": {
+      "value": "tb-api-management-gateway-wcus"
+    },
+    "api_developer_apigateway_DNS_DR": {
+      "value": "tb-api-developer-gateway-wcus"
+    },
+    "amnone_ats_apigateway_DNS_DR": {
+      "value": "tb-apigateway-wcus-ats"
+    },
+    "amnone_UI_DNS": {
+      "value": "tb-amnone"
+    },
+    "match_UI_DNS": {
+      "value": "tb-match"
+    },
+    "design_UI_DNS": {
+      "value": "tb-design"
+    },
+    "packetgen_UI_DNS": {
+      "value": "tb-packetgen"
+    },
+    "amnone_ats_UI_DNS": {
+      "value": "tb-ats"
+    },
+    "authenticate_UI_DNS": {
+      "value": "tb-authenticate"
+    },
+    "sonar_UI_DNS": {
+      "value": "tb-sonar"
+    },
+    "specialops_DNS": {
+      "value": "tb-apps"
+    },
+    "apim_developer_portal_DNS": {
+      "value": "tb-api-developer"
+    },
+    "apim_management_DNS": {
+      "value": "tb-api-management"
+    },
+    "recruiterdashboard_UI_DNS": {
+      "value": "tb-rd"
+    },
+    "api_DNS": {
+      "value": "tb-api"
+    },
+    "amnone_ats_api_DNS": {
+      "value": "tb-ats-api"
+    }
+  }
+}

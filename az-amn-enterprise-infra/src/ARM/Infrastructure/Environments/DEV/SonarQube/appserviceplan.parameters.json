@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AppService_Plan_Name": {
+      "value": "amn-wus2-hub-sonar-aspl-d01"
+    },
+    "location": {
+      "value": "West US 2"
+    },
+    "sku": {
+      "value": "PremiumV2"
+    },
+    "kind" :{
+      "value": "linux"
+    },
+    "skuCode": {
+      "value": "P1V2"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "app",
+        "environment": "dev"
+      }
+    }
+  }
+}

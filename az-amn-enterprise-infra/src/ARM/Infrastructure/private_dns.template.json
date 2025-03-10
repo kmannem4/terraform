@@ -1,0 +1,338 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "privateDnsZones_name": {
+            "type": "String"
+        },
+        "environment": {
+            "type": "string"
+        },
+        "atsdns": {
+            "type": "String"
+        },
+        "apidns": {
+            "type": "String"
+        },
+        "api_developer_dns": {
+            "type": "String"
+        },
+        "api_management_dns": {
+            "type": "String"
+        },
+        "api_public_DNSzone": {
+            "type": "String"
+        },
+        "vmsdns": {
+            "type": "String"
+        },
+        "amnone-ic-dns": {
+            "type": "String"
+        },
+        "amnone-ic-IpAddress": {
+            "type": "String"
+        },
+        "imatch-dns": {
+            "type": "String"
+        },
+        "Imatch-IpAddress": {
+            "type": "String"
+        },
+        "apimname": {
+            "type": "String"
+        },
+        "AMN_HUB_APIM_ResourceGroup": {
+            "type": "String"
+        },
+        "AMN_HUB_subscriptionId": {
+            "type": "String"
+        },
+        "AMN_HUB_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_HUB_virtualNetworkName": {
+            "type": "String"
+        },
+        "AMN_HUB_virtualNetworkName_link": {
+            "type": "String"
+        },
+        "AMN_TTM_subscriptionId": {
+            "type": "String"
+        },
+        "AMN_TTM_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_TTM_virtualNetworkName": {
+            "type": "String"
+        },
+        "AMN_TTM_virtualNetworkName_link": {
+            "type": "String"
+        },
+        "AMN_amnonestaffing_subscriptionId": {
+            "type": "String"
+        },
+        "AMN_match_subscriptionID": {
+            "type": "String"
+        },
+        "AMN_amnonekub_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_amnonekub_virtualNetworkName": {
+            "type": "String"
+        },
+        "AMN_amnonekub_virtualNetworkName_link": {
+            "type": "String"
+        },
+        "AMN_floatpool_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_floatpool_virtualNetworkName": {
+            "type": "String"
+        },
+        "AMN_floatpool_virtualNetworkName_link": {
+            "type": "String"
+        },
+        "AMN_amnonematch_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_amnonematch_virtualNetworkName": {
+            "type": "String"
+        },
+        "AMN_amnonematch_virtualNetworkName_link": {
+            "type": "String"
+        },
+        "AMN_amnoneshared_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_amnoneshared_virtualNetworkName": {
+            "type": "String"
+        },
+        "AMN_amnoneshared_virtualNetworkName_link": {
+            "type": "String"
+        }
+    },
+    "variables": {
+        "apim": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_APIM_ResourceGroup'), '/providers/Microsoft.ApiManagement/service/', parameters('apimname'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/privateDnsZones",
+            "apiVersion": "2020-06-01",
+            "name": "[parameters('privateDnsZones_name')]",
+            "location": "global",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('atsdns'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[reference(variables('apim'),'2019-01-01').privateIPAddresses[0]]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('apidns'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[reference(variables('apim'),'2019-01-01').privateIPAddresses[0]]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('api_developer_dns'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[reference(variables('apim'),'2019-01-01').privateIPAddresses[0]]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('api_management_dns'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[reference(variables('apim'),'2019-01-01').privateIPAddresses[0]]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/CNAME",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('vmsdns'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "cnameRecord": [
+                    {
+                        "cname": "[parameters('api_public_DNSzone')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('amnone-ic-dns'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[parameters('amnone-ic-IpAddress')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/A",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('imatch-dns'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "ttl": 3600,
+                "aRecords": [
+                    {
+                        "ipv4Address": "[parameters('Imatch-IpAddress')]"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('AMN_HUB_virtualNetworkName_link'))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "registrationEnabled": true,
+                "virtualNetwork": {
+                    "id": "[concat('/subscriptions/', parameters('AMN_HUB_subscriptionId'),'/resourcegroups/', parameters('AMN_HUB_serverFarmResourceGroup'), '/providers/Microsoft.Network/virtualNetworks/', parameters('AMN_HUB_virtualNetworkName'))]"
+                }
+            }
+        },
+        {
+            "condition": "[or(equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST'))]",
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('AMN_TTM_virtualNetworkName_link'))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[concat('/subscriptions/', parameters('AMN_TTM_subscriptionId'),'/resourcegroups/', parameters('AMN_TTM_serverFarmResourceGroup'), '/providers/Microsoft.Network/virtualNetworks/', parameters('AMN_TTM_virtualNetworkName'))]"
+
+                }
+            }
+        },
+        {
+            "condition": "[or(equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'))]",
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('AMN_amnonekub_virtualNetworkName_link'))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[concat('/subscriptions/', parameters('AMN_amnonestaffing_subscriptionId'),'/resourcegroups/', parameters('AMN_amnonekub_serverFarmResourceGroup'), '/providers/Microsoft.Network/virtualNetworks/', parameters('AMN_amnonekub_virtualNetworkName'))]"
+
+                }
+            }
+        },
+        {
+            "condition": "[or(equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'))]",
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('AMN_floatpool_virtualNetworkName_link'))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[concat('/subscriptions/', parameters('AMN_amnonestaffing_subscriptionId'),'/resourcegroups/', parameters('AMN_floatpool_serverFarmResourceGroup'), '/providers/Microsoft.Network/virtualNetworks/', parameters('AMN_floatpool_virtualNetworkName'))]"
+
+                }
+            }
+        },
+        {
+            "condition": "[or(equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'))]",
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('AMN_amnonematch_virtualNetworkName_link'))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[concat('/subscriptions/', parameters('AMN_match_subscriptionID'),'/resourcegroups/', parameters('AMN_amnonematch_serverFarmResourceGroup'), '/providers/Microsoft.Network/virtualNetworks/', parameters('AMN_amnonematch_virtualNetworkName'))]"
+
+                }
+            }
+        },
+        {
+            "condition": "[or(equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'))]",
+            "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "apiVersion": "2020-06-01",
+            "name": "[concat(parameters('privateDnsZones_name'), '/', parameters('AMN_amnoneshared_virtualNetworkName_link'))]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZones_name'))]"
+            ],
+            "properties": {
+                "registrationEnabled": false,
+                "virtualNetwork": {
+                    "id": "[concat('/subscriptions/', parameters('AMN_amnonestaffing_subscriptionId'),'/resourcegroups/', parameters('AMN_amnoneshared_serverFarmResourceGroup'), '/providers/Microsoft.Network/virtualNetworks/', parameters('AMN_amnoneshared_virtualNetworkName'))]"
+
+                }
+            }
+        }
+    ]
+}

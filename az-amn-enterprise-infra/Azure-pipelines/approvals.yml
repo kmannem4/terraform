@@ -1,0 +1,9 @@
+steps:
+  - task: ManualValidation@0
+    timeoutInMinutes: 1440 # task times out in 1 day
+    inputs:
+      notifyUsers: |
+        harshith.vangaveti@shiftwise.com
+        karthik.mannem@shiftwise.com
+      instructions: "Please Review deployment to Test environment"
+      onTimeout: "reject"

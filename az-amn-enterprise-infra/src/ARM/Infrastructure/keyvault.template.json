@@ -1,0 +1,257 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "vaultName": {
+        "type": "String"
+      },
+      "location": {
+        "type": "string"
+      },
+      "appGatewayIdentityName": {
+        "type": "string"
+      },
+      "softDeleteRetentionInDays": {
+        "type": "int"
+      },
+      "enablePurgeProtection": {
+        "type": "bool"
+      },
+      "resourceid": {
+        "type": "String"
+      },
+      "settingName": {
+        "type": "String"
+      },
+      "objectID": {
+      "type": "object"
+      },
+      "tagsArray": {
+        "type": "object"
+      }
+    },
+    "variables": {},
+    "resources": [
+      {
+        "type": "Microsoft.KeyVault/vaults",
+        "apiVersion": "2022-07-01",
+        "name": "[parameters('vaultName')]",
+        "location": "[parameters('location')]",
+        "tags": "[parameters('tagsArray')]",
+        "resources": [
+          {
+            "type": "Microsoft.KeyVault/vaults/providers/diagnosticSettings",
+            "apiVersion": "2017-05-01-preview",
+            "name": "[concat(parameters('vaultName'),'/microsoft.insights/', parameters('settingName'))]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+              "[resourceId('Microsoft.KeyVault/vaults/', parameters('vaultName'))]"
+            ],
+              "properties": {
+                "name": "[parameters('settingName')]",
+                "workspaceId": "[parameters('resourceid')]",
+                "logs": [
+                  {
+                    "category": "AuditEvent",
+                    "enabled": true
+                  }
+                ],
+                "metrics": [
+                  {
+                    "category": "AllMetrics",
+                    "enabled": true
+                  }
+                ]
+              }
+          }
+        ],
+        "properties": {
+          "sku": {
+            "family": "A",
+            "name": "standard"
+          },
+        "tenantId": "[subscription().tenantId]",
+        "accessPolicies": [
+          {
+            "metadata": {
+              "description": "Access for AZ_SW_KeyVault_(ENV)_Full (group in AHS AD)"
+            },
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[parameters('objectID').AZ_SW_KeyVault_Full]",
+            "permissions": {
+              "keys": [
+                "get",
+                "list"
+              ],
+              "secrets": [
+                "get",
+                "list"
+              ],
+              "certificates": [
+                "get",
+                "list"
+              ]
+            }
+          },
+          {
+            "metadata": {
+              "description": "Access for AZ_AMN_KeyVault_(ENV)_Full (group in AHS AD)"
+            },
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[parameters('objectID').AZ_AMN_KeyVault_Full]",
+            "permissions": {
+              "keys": [
+                "get",
+                "list"
+              ],
+              "secrets": [
+                "get",
+                "list"
+              ],
+              "certificates": [
+                "get",
+                "list"
+              ]
+            }
+          },
+          {
+            "metadata": {
+              "description": "Access for AMN_IPS(ENV) (group in AHS AD)"
+            },
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[parameters('objectID').AMN_IPS]",
+            "permissions": {
+              "keys": [
+                "Get",
+                "List",
+                "Import",
+                "Update",
+                "Create",
+                "Decrypt",
+                "Encrypt",
+                "Verify"
+              ],
+              "secrets": [
+                "Get",
+                "List",
+                "Set"
+              ],
+              "certificates": [
+                "Get",
+                "List",
+                "Update",
+                "Create",
+                "Import",
+                "Delete"
+              ]
+            }
+          },
+          {
+            "metadata": {
+              "description": "Access for Microsoft.Azure.Frontdoor"
+            },
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[parameters('objectID').Microsoft_Azure_Frontdoor]",
+            "permissions": {
+              "keys": [
+                "get",
+                "list"
+              ],
+              "secrets": [
+                "get",
+                "list"
+              ],
+              "certificates": [
+                "get",
+                "list"
+              ]
+            }
+          },
+          {
+            "metadata": {
+              "description": "Access for Karthik Mannem"
+            },
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[parameters('objectID').Karthik_Mannem]",
+            "permissions": {
+              "keys": [
+                "encrypt",
+                "decrypt",
+                "wrapKey",
+                "unwrapKey",
+                "sign",
+                "verify",
+                "get",
+                "list",
+                "create",
+                "update",
+                "import",
+                "delete",
+                "backup",
+                "restore",
+                "recover",
+                "purge"
+              ],
+              "secrets": [
+                "get",
+                "list",
+                "set",
+                "delete",
+                "backup",
+                "restore",
+                "recover",
+                "purge"
+              ],
+              "certificates": [
+                "get",
+                "list",
+                "delete",
+                "create",
+                "import",
+                "update",
+                "managecontacts",
+                "getissuers",
+                "listissuers",
+                "setissuers",
+                "deleteissuers",
+                "manageissuers",
+                "recover",
+                "purge",
+                "backup",
+                "restore"
+              ]
+            }
+          },
+          {
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('appGatewayIdentityName')), '2018-11-30').principalId]",
+            "permissions": {
+              "keys": [
+                "get",
+                "list",
+                "import"
+              ],
+              "secrets": [
+                "get",
+                "list",
+                "set"
+              ],
+              "certificates": [
+                "get",
+                "list",
+                "import"
+              ]
+            }
+          }
+        ],
+          "enabledForDeployment": true,
+          "enabledForDiskEncryption": false,
+          "enabledForTemplateDeployment": true,
+          "enableRbacAuthorization": false,
+          "softDeleteRetentionInDays": "[parameters('softDeleteRetentionInDays')]",
+          "enablePurgeProtection": "[parameters('enablePurgeProtection')]",
+          "enableSoftDelete": true
+        }
+      }
+    ]
+  }

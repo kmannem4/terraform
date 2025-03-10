@@ -1,0 +1,160 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "type": "string"
+        },
+        "AMN_HUB_serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "AMN_HUB_KeyVaultName": {
+            "type": "String"
+        },
+        "location": {
+            "type": "string"
+        },
+        "additionallocation": {
+            "type": "string"
+        },
+        "virtualNetworkName": {
+            "type": "string"
+        },
+        "subnetname": {
+            "type": "String"
+        },
+        "dr_vnet_ResourceGroupName": {
+            "type": "string"
+        },
+        "dr_virtualNetworkName": {
+            "type": "string"
+        },
+        "dr_subnetname": {
+            "type": "String"
+        },
+        "adminEmail": {
+            "type": "string"
+        },
+        "orgName": {
+            "type": "string"
+        },
+        "tier": {
+            "type": "string"
+        },
+        "capacity": {
+            "type": "int"
+        },
+        "loggerName": {
+            "type": "string"
+        },
+        "appinsightsname": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "additionalLocation": [
+            {
+                "location": "[parameters('additionallocation')]",
+                "sku": {
+                    "name": "[parameters('tier')]",
+                    "capacity": "[parameters('capacity')]"
+                },
+                "virtualNetworkConfiguration": {
+                    "subnetResourceId": "[resourceId(subscription().subscriptionId, parameters('dr_vnet_ResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets', parameters('dr_virtualNetworkName'), parameters('dr_subnetname'))]"
+                }
+            }
+        ]
+    },
+    "resources": [
+        {
+            "apiVersion": "2021-08-01",
+            "name": "[parameters('apimname')]",
+            "location": "[parameters('location')]",
+            "type": "Microsoft.ApiManagement/service",
+            "sku": {
+                "name": "[parameters('tier')]",
+                "capacity": "[parameters('capacity')]"
+            },
+            "identity": {
+                "type": "systemAssigned"
+            },
+            "properties": {
+                "publisherEmail": "[parameters('adminEmail')]",
+                "publisherName": "[parameters('orgName')]",
+                "gatewayUrl": "[concat(parameters('apimname'), '.azure-api.net')]",
+                "identity": {
+                    "type": "systemAssigned"
+                },
+                "hostnameConfigurations": [],
+                "virtualNetworkType": "Internal",
+                "virtualNetworkConfiguration": {
+                    "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetname'))]"
+                },
+                "additionalLocations": "[if(equals(parameters('tier'), 'Premium'), variables('additionalLocation'), json('null'))]"
+            },
+            
+            "resources": [
+                {
+                    "apiVersion": "2021-08-01",
+                    "type": "loggers",
+                    "name": "[parameters('loggerName')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ApiManagement/service/', parameters('apimname'))]"
+                    ],
+                    "properties": {
+                        "loggerType": "applicationInsights",
+                        "resourceId": "[parameters('appinsightsname')]",
+                        "credentials": {
+                            "instrumentationKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appinsightsname')), '2020-02-02').InstrumentationKey]"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+        "apiVersion": "2022-05-01",
+        "name": "keyvaultTemplate",
+        "type": "Microsoft.Resources/deployments",
+        "resourceGroup": "[parameters('AMN_HUB_serverFarmResourceGroup')]",
+        "properties": {
+          "mode": "Incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "resources": [
+              {
+                "type": "Microsoft.KeyVault/vaults/accessPolicies",
+                "apiVersion": "2021-06-01-preview",
+                "name": "[concat(parameters('AMN_HUB_KeyVaultName'), '/add')]",
+                "properties": {
+                  "accessPolicies": [
+                    {
+                      "tenantId": "[subscription().tenantId]",
+                      "objectId": "[reference(resourceId('Microsoft.ApiManagement/service', parameters('apimname')), '2021-08-01', 'Full').identity.principalId]",
+                      "permissions": {
+                        "keys": [
+                          "get",
+                          "list",
+                          "import"
+                        ],
+                        "secrets": [
+                          "get",
+                          "list",
+                          "set"
+                        ],
+                        "certificates": [
+                          "get",
+                          "list",
+                          "import"
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+}

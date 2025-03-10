@@ -1,0 +1,11 @@
+{
+  "name": "Sample Test",
+  "applicationGroup": "Terraform Demo",
+  "description": "Test module.",
+  "businessUnit": "Test",
+  "serviceTier": "Bronze",
+  "primaryRegion": "WestUS2",
+  "modules": {
+    
+  }
+}

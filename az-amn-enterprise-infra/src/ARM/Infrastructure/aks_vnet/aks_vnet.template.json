@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetSettings": {
+      "type": "object"
+    },
+    "location": {
+      "type": "string"
+    },
+    "tagsArray": {
+      "type": "object"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('vnetSettings').name]",
+      "apiVersion": "2023-02-01",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tagsArray')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetSettings').addressSpace]"
+          ]
+        },
+        "dhcpOptions": {
+          "dnsServers": []
+        },
+        "subnets": [
+          {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[parameters('vnetSettings').appTierSubnetName]",
+            "properties": {
+              "addressPrefix": "[parameters('vnetSettings').appTierSubnetAddessPrefix]",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+          }
+        ],
+        "virtualNetworkPeerings": [],
+        "enableDdosProtection": false,
+        "enableVmProtection": false
+      },
+      "dependsOn": []
+    }
+  ]
+}

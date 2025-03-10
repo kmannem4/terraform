@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "TEST"
+    },
+    "appservicename": {
+      "value": "amn-wus2-hub-sonar-as-t01"
+    },
+    "Application_Insights_ResourceGroupName": {
+      "value": "amn-wus2-hub-rg-t01"
+    },
+    "Application_Insights_Name": {
+      "value": "amn-wus2-hub-appinsights-t01"
+    },
+    "resourceid": {
+      "value": "/subscriptions/43c5a646-c00c-4c59-a332-df854c5dd08c/resourcegroups/co-wus2-enterprisemonitor-rg-s01/providers/microsoft.operationalinsights/workspaces/amn-co-wus2-enterprisemonitor-loga-d01"
+    },
+    "Diagnostic_settings_Name": {
+      "value": "amn-wus2-sonar-as-diagset-t01"
+    },
+    "AppService_Plan_Name": {
+      "value": "amn-wus2-hub-sonar-aspl-t01"
+    },
+    "AppService_stagingsitename": {
+      "value": "amn-wus2-hub-sonar-as-t01(staging)"
+    },
+    "AMN_HUB_subscriptionId": {
+      "value": "e764d23e-759d-4cd4-8b5f-27e4c703f6a8"
+    },
+    "AMN_HUB_ResourceGroupName": {
+      "value": "amn-wus2-hub-rg-t01"
+    },
+    "AMN_HUB_virtualNetworkName": {
+      "value": "amn-wus2-hub-vnet-t01"
+    },
+    "Azure_front_Door_ID": {
+      "value": "7a5ecb20-a04f-4226-bb72-3d9414f539e9"
+    },
+    "AMN_HUB_AS_subnetname": {
+      "value": "amn-hub-sonar-as-sn"
+    },
+    "AMN_HUB_managedidentity_Name": {
+      "value": "amn-wus2-hub-agw-mgid-t01"
+    },
+    "location": {
+      "value": "westus2"
+    },
+    "DR_location": {
+      "value": "westcentralus"
+    },
+    "kindtype": {
+      "value": "app"
+    },
+    "AppService_publishing_Username": {
+      "value": "$amn-wus2-hub-sonar-as-t01"
+    },
+    "AppService_publishing_Username_for_staging": {
+      "value": "$amn-wus2-hub-sonar-as-t01__staging"
+    },
+    "use32BitWorkerProcess": {
+      "value": "false"
+    },
+    "alwaysOn": {
+      "value": "true"
+    },
+    "httpsOnly": {
+      "value": "true"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "app",
+        "environment": "test",
+        "appname" : "sonarqube"
+      }
+    }
+  }
+}

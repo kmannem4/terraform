@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "AppService_Plan_Name": {
+      "value": "amn-wus2-hub-sonar-aspl-d01"
+    },
+    "appserviceplanautoscalename": {
+      "value": "amn-wus2-hub-sonar-aspl-d01-autoscale"
+    },
+    "AMN_HUB_subscriptionId": {
+      "value": "e764d23e-759d-4cd4-8b5f-27e4c703f6a8"
+    },
+    "AMN_HUB_ResourceGroupName": {
+      "value": "amn-wus2-hub-rg-d01"
+    },
+    "location": {
+      "value": "westus2"
+    },
+    "appserviceplanautoscale_minCapacity": {
+      "value": "1"
+    },
+    "appserviceplanautoscale_maxCapacity": {
+      "value": "3"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "app",
+        "environment": "dev"
+      }
+    }
+  }
+}

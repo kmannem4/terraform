@@ -1,0 +1,23 @@
+parameters:
+      - name : resource_name
+        default : ''
+      - name :  resource_template_name
+        default : ''
+      - name : resource_param_name
+        default : ''
+      - name : Azure_Resource_Manager_connection
+        default : ''
+      - name : environment
+        default : ''
+steps :
+    - task: AzureResourceManagerTemplateDeployment@3
+      displayName: 'Create or Update ${{parameters.resource_name}}'
+      inputs:
+          azureResourceManagerConnection: ${{parameters.Azure_Resource_Manager_connection}}
+          subscriptionId: '$(Subscription)'
+          action: 'Create Or Update Resource Group'
+          resourceGroupName: '$(AMN_HUB_ResourceGroupName)'
+          location: '$(location)'
+          templateLocation: 'Linked artifact'
+          csmFile: '$(Agent.BuildDirectory)/$(Template_Path)/${{parameters.resource_name}}/${{parameters.resource_template_name}}'
+          csmParametersFile: '$(Agent.BuildDirectory)/$(Template_Path)/${{parameters.resource_name}}/Environments/${{parameters.environment}}/${{parameters.resource_param_name}}'

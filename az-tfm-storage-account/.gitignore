@@ -1,0 +1,10 @@
+test/go.mod
+examples/.terraform.lock.hcl
+examples/terraform.tfstate
+examples/terraform.tfstate.backup
+examples/.terraform/modules/modules.json
+examples/.terraform/providers/registry.terraform.io/hashicorp/azurerm/3.80.0/windows_amd64/terraform-provider-azurerm_v3.80.0_x5.exe
+test/go.sum
+go.mod
+.terraform
+test/vendor/*

@@ -1,0 +1,11 @@
+---
+parameters:
+- name: repoName
+  type: string
+  default: ""
+
+variables:
+  workingDirectory: "$(System.DefaultWorkingDirectory)/${{ parameters.repoName }}/examples"
+  ServiceArm: "ADO-AMNEngineering-SharedServices-lower-AMN-TF-Test-ServiceConnection"
+  environment: "t01"
+  repoName: "${{ parameters.repoName }}"

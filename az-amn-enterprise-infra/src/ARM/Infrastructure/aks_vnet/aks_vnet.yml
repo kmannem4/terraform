@@ -1,0 +1,74 @@
+# Pipeline file structure: https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema
+# Task List: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks
+
+name: "2.0$(rev:.r)"
+
+resources:
+  - repo : self
+
+# The pipeline triggers for every commit (trigger: '*')   
+trigger:
+   batch: true
+   branches:
+    include:
+      - /*
+   paths :
+    include:
+    - src/ARM/Infrastructure/aks_vnet/*
+
+# The pipeline triggers for every  pull requests (pr: '*')
+pr: 
+- '*'
+
+variables:
+ - group: "AMN_IPS_INFRA"
+
+stages:
+# this stage is for building code
+- stage : Build
+  jobs:
+  - template : /Azure-pipelines/build-steps.yml
+
+#==================================================================================================================================================================
+
+# This stage deploys the code to the DEV environment. It triggers only for commits to the develop branch (refs/heads/develop) and when the build is successful and the Test stage is successful (due to the dependsOn directive).              
+# this stage is for deploying code to respective environment
+- stage : Deploying_to_DEV
+  displayName: Deploying_to_DEV
+  dependsOn:
+    - Build
+  condition: and(succeeded('Build'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  
+  #list the variables here
+  variables :
+  - template : /Azure-pipelines/Variables/DEV_variables.yaml
+
+  
+  # the actual deployment starts here
+  jobs :
+# once the evevironment is approved by the approvers template deployment will begin
+  - job: waitForValidation
+    displayName: Wait for external validation
+    pool: server
+    timeoutInMinutes: 4320 # job times out in 3 days
+    steps:
+    - template :  /Azure-pipelines/approvals.yml
+
+  - deployment: aks_vnetDeployment
+    displayName: Deploying app insights
+    dependsOn:
+    - waitForValidation
+    workspace:
+      clean: all 
+    environment :  'DEV'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template :  /Azure-pipelines/release-steps.yml
+            parameters:
+               resource_name : 'aks_vnet'
+               resource_template_name : 'aks_vnet.template.json'
+               resource_param_name : 'aks_vnet.parameters.json'
+               Azure_Resource_Manager_connection : 'AMN_shared_DEV' 
+               

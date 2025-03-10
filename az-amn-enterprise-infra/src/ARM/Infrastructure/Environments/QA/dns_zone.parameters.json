@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dnszonesname": {
+            "value": "qa.ttm.amnhealthcare.com"
+        },
+        "environemnt": {
+            "value": "qa"
+        },
+        "publicIPAddresses_amn_wus2_hub_pip_externalid": {
+            "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-q01/providers/Microsoft.Network/publicIPAddresses/amn-wus2-hub-pip-q01"
+        },
+        "publicIPAddresses_amn_wus2_hub_pip_externalid_DR": {
+            "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wcus-hub-rg-q01/providers/Microsoft.Network/publicIPAddresses/amn-wcus-hub-pip-q01"
+        },
+        "frontdoors_amn_wus2_hub_afd_externalid": {
+            "value": "/subscriptions/e764d23e-759d-4cd4-8b5f-27e4c703f6a8/resourceGroups/amn-wus2-hub-rg-q01/providers/Microsoft.Network/frontdoors/amn-wus2-hub-afd-q01"
+        },
+        "frontdoors_vmsidp_externalid": {
+            "value": "/subscriptions/95181a59-30e2-4faf-b8c7-993d85a7e640/resourceGroups/vms-wus2-idp-rg-q01/providers/Microsoft.Network/frontdoors/qa-vmsidp"
+        },
+        "ttm_apigateway_DNS": {
+            "value": "apigateway"
+        },
+        "ttm_api_DNS": {
+            "value": "api"
+        },
+        "ttm_apigateway_DNS_DR": {
+            "value": "apigateway-wcus"
+        },
+        "ttm_login_DNS": {
+            "value": "login"
+        },
+        "tagsArray": {
+            "value": {
+              "charge-to": "800-71200-0000-0000",
+              "role": "infrastructure"
+            }
+        }
+    }
+}

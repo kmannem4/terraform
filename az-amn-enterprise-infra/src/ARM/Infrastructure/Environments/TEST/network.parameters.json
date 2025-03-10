@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkSecurityGroupName": {
+      "value": "amn-wus2-hub-nsg-t01"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "role": "infrastructure",
+        "environment": "test"
+      }
+    },
+    "resourceid": {
+      "value": "/subscriptions/43c5a646-c00c-4c59-a332-df854c5dd08c/resourcegroups/co-wus2-enterprisemonitor-rg-s01/providers/microsoft.operationalinsights/workspaces/amn-co-wus2-enterprisemonitor-loga-d01"
+    },
+    "nsgsettingName": {
+      "value": "amn-co-wus2-enterprisemonitor-loga-d01-hub-nsg-diagset-t01"
+    },
+    "vnetsettingName": {
+      "value": "amn-co-wus2-enterprisemonitor-loga-d01-hub-vnet-diagset-t01"
+    },
+    "location": {
+      "value": "West US 2"
+    },
+    "vnetSettings": {
+      "value": {
+        "name": "amn-wus2-hub-vnet-t01",
+        "addressSpace": "10.98.88.0/21",
+        "apimDmzTierSubnetAddessPrefix": "10.98.88.0/27",
+        "apimDmzTierSubnetName": "amn-hub-apim-sn",
+        "appTierSubnetAddessPrefix": "10.98.88.64/26",
+        "appTierSubnetName": "amn-hub-agw-sn",
+        "sonarasSubnetName" : "amn-hub-sonar-as-sn",
+        "sonarasSubnetAddessPrefix":"10.98.89.0/27",
+        "sonarSqlSubnetName":"amn-hub-sonar-sql-sn",
+        "sonarSqlSubnetAddessPrefix":"10.98.90.0/27",
+        "apim_migration_SubnetAddessPrefix": "10.98.93.0/27",
+        "apim_migration_SubnetName": "amn-hub-migrate-apim-sn"
+      }
+    },
+    "delegationsname": {
+      "value": "Microsoft.Web/serverFarms"
+    }
+  }
+}

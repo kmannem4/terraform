@@ -1,0 +1,838 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "WAFName": {
+            "type": "String"
+        },
+        "environment": {
+            "type": "string"
+        },
+        "DenyNonAMNTraffic_state": {
+            "type": "String"
+        },
+        "AllowRapid7Traffic_state": {
+            "type": "String"
+        },
+        "AllowIDPWellKnown_state": {
+            "type": "String"
+        },
+        "tagsArray": {
+            "type": "object"
+        },
+        "AllowWebhooks_url": {
+            "type": "array"
+        },
+        "TempAllowVmsSCIMApi": {
+            "type": "array"
+        },
+        "AllowJobsearch": {
+            "type": "array"
+        },
+        "AllowJobsearch_state": {
+            "type": "String"
+        },
+        "AllowIDPWellKnown": {
+            "type": "array"
+        },
+        "DenyNonAMNTrafficToAMIE2_url": {
+            "type": "array"
+        },
+        "AllowPassportiMatchAPI_status": {
+            "type": "String"
+        },
+        "location": {
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/frontdoorwebapplicationfirewallpolicies",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('WAFName')]",
+            "location": "[parameters('location')]",
+            "tags": "[parameters('tagsArray')]",
+            "sku": {
+                "name": "Classic_AzureFrontDoor"
+            },
+            "properties": {
+                "policySettings": {
+                    "enabledState": "Enabled",
+                    "mode": "Prevention",
+                    "customBlockResponseStatusCode": 403,
+                    "customBlockResponseBody": "Rm9yYmlkZGVu",
+                    "requestBodyCheck": "Enabled"
+                },
+                "customRules": {
+                    "rules": [
+                        {
+                            "name": "DenyNonAMNTraffic",
+                            "enabledState": "[parameters('DenyNonAMNTraffic_state')]",
+                            "priority": 100,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "action": "Block",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RemoteAddr",
+                                    "operator": "IPMatch",
+                                    "negateCondition": true,
+                                    "matchValue": [
+                                        "155.130.1.248/29",
+                                        "8.227.115.32/29",
+                                        "8.227.114.6",
+                                        "8.227.115.18",
+                                        "69.63.125.80/29",
+                                        "4.36.68.80/29",
+                                        "108.163.0.0/24",
+                                        "108.163.2.0/24",
+                                        "155.130.13.0/25",
+                                        "208.185.167.232/29",
+                                        "173.226.124.0/24",
+                                        "209.234.199.0/24",
+                                        "64.136.220.80/28",
+                                        "66.193.206.0/23",
+                                        "66.37.243.74",
+                                        "74.62.21.160/29",
+                                        "98.168.196.81/32",
+                                        "40.91.116.117/32"
+                                    ],
+                                    "transforms": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "AllowRapid7Traffic",
+                            "enabledState": "[parameters('AllowRapid7Traffic_state')]",
+                            "priority": 91,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 91,
+                            "action": "Allow",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RemoteAddr",
+                                    "operator": "IPMatch",
+                                    "negateCondition": false,
+                                    "matchValue": [
+                                        "52.14.12.25",
+                                        "52.14.88.11",
+                                        "3.22.113.166"
+                                    ],
+                                    "transforms": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "AllowWebhooks",
+                            "enabledState": "Enabled",
+                            "priority": 90,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "action": "Allow",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RequestUri",
+                                    "operator": "RegEx",
+                                    "negateCondition": false,
+                                    "matchValue": "[parameters('AllowWebhooks_url')]",
+                                    "transforms": [
+                                        "Lowercase"
+                                    ]
+                                },
+                                {
+                                    "matchVariable": "RequestMethod",
+                                    "operator": "Equal",
+                                    "negateCondition": false,
+                                    "matchValue": [
+                                        "POST"
+                                    ],
+                                    "transforms": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "DenyNonAMNTrafficToAMIE2",
+                            "enabledState": "Enabled",
+                            "priority": 110,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "action": "Block",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RequestUri",
+                                    "operator": "RegEx",
+                                    "negateCondition": false,
+                                    "matchValue": "[parameters('DenyNonAMNTrafficToAMIE2_url')]",
+                                    "transforms": [
+                                        "Lowercase"
+                                    ]
+                                },
+                                {
+                                    "matchVariable": "RemoteAddr",
+                                    "operator": "IPMatch",
+                                    "negateCondition": true,
+                                    "matchValue": [
+                                        "155.130.1.248/29",
+                                        "155.130.13.0/25",
+                                        "208.185.167.232/29",
+                                        "173.226.124.0/24",
+                                        "209.234.199.0/24",
+                                        "64.136.220.80/28",
+                                        "66.193.206.0/23",
+                                        "66.37.243.74",
+                                        "74.62.21.160/29",
+                                        "98.168.196.81/32",
+                                        "40.91.116.117/32"
+                                    ],
+                                    "transforms": []
+                                }
+                            ]
+                        },
+                        {
+                            "name": "AllowAMIEApiWebTest",
+                            "enabledState": "Enabled",
+                            "priority": 85,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "action": "Allow",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RequestUri",
+                                    "operator": "RegEx",
+                                    "negateCondition": false,
+                                    "matchValue": [
+                                        "^https:\\/\\/ats-api(\\.int|\\.test)?\\.amnhealthcare\\.io\\/status-0123456789abcdef$"
+                                    ],
+                                    "transforms": [
+                                        "Lowercase"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "AllowIDPWellKnown",
+                            "enabledState": "[if(or(equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'QA'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST')), 'Disabled', parameters('AllowIDPWellKnown_state'))]",
+                            "priority": 86,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "action": "Allow",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RequestUri",
+                                    "operator": "RegEx",
+                                    "negateCondition": false,
+                                    "matchValue": "[parameters('AllowIDPWellKnown')]",
+                                    "transforms": [
+                                        "Lowercase"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "TempAllowVmsSCIMApi",
+                            "enabledState": "Enabled",
+                            "priority": 80,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "action": "Allow",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RequestUri",
+                                    "operator": "BeginsWith",
+                                    "negateCondition": false,
+                                    "matchValue": "[parameters('TempAllowVmsSCIMApi')]",
+                                    "transforms": [
+                                        "Lowercase"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "AllowJobsearch",
+                            "enabledState": "[if(or(equals(parameters('environment'), 'DEV'), equals(parameters('environment'), 'INT'), equals(parameters('environment'), 'PROD'), equals(parameters('environment'), 'TEST')), 'Disabled', parameters('AllowJobsearch_state'))]",
+                            "priority": 81,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "action": "Allow",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RequestUri",
+                                    "operator": "BeginsWith",
+                                    "negateCondition": false,
+                                    "matchValue": "[parameters('AllowJobsearch')]",
+                                    "transforms": [
+                                        "Lowercase"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "AllowMDFOpenIdWellKnown",
+                            "enabledState": "Enabled",
+                            "priority": 87,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "action": "Allow",
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RequestUri",
+                                    "operator": "RegEx",
+                                    "negateCondition": false,
+                                    "matchValue": [
+                                        "^https:\\/\\/identity\\.(dev|qa)\\.medefis5\\.com\\/identity\\/\\.well-known\\/.*$"
+                                    ],
+                                    "transforms": [
+                                        "Lowercase"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "AllowPassportiMatchAPI",
+                            "enabledState": "[parameters('AllowPassportiMatchAPI_status')]",
+                            "priority": 88,
+                            "ruleType": "MatchRule",
+                            "rateLimitDurationInMinutes": 1,
+                            "rateLimitThreshold": 100,
+                            "matchConditions": [
+                                {
+                                    "matchVariable": "RequestHeader",
+                                    "selector": "x-apim-id",
+                                    "operator": "Equal",
+                                    "negateCondition": false,
+                                    "matchValue": [
+                                        "S2ZdmTlCD7uV5Nk"
+                                    ],
+                                    "transforms": []
+                                }
+                            ],
+                            "action": "Allow"
+                        }                                                 
+                    ]
+                },
+                "managedRules": {
+                    "managedRuleSets": [
+                        {
+                            "ruleSetType": "DefaultRuleSet",
+                            "ruleSetVersion": "1.0",
+                            "ruleGroupOverrides": [
+                                {
+                                    "ruleGroupName": "SQLI",
+                                    "rules": [
+                                        {
+                                            "ruleId": "942260",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "wm-last-euid"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "wm-session-per-user"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_uf_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_tabs_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_hb_"
+                                                }                                                                                                                                                                                                                                                                                                   
+                                            ]
+                                        },
+                                        {
+                                            "ruleId": "942340",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "wm-last-euid"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "wm-session-per-user"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_uf_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_tabs_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_hb_"
+                                                }                                                                                                                                                                                               
+                                            ]
+                                        },
+                                        {
+                                            "ruleId": "942330",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_uf_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_tabs_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_hb_"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "session_state"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "code"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "ai_user"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "ai_session"
+                                                }                                                                                                                                                                                                                                                                                                                                                
+                                            ]
+                                        },                                        
+                                        {
+                                            "ruleId": "942370",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_uf_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_tabs_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_hb_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "wm-session-per-user"
+                                                }                                                                                                                                                                                                                                               
+                                            ]
+                                        },                                                                                                                          
+                                        {
+                                            "ruleId": "942100",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "session_state"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "code"
+                                                }                                                                                                                                                                                                                                               
+                                            ]
+                                        },
+                                        {
+                                            "ruleId": "942110",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "filter"
+                                                }                                                                                                                                                                                                                                            
+                                            ]
+                                        },                                        
+                                        {
+                                            "ruleId": "942120",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "session_state"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "code"
+                                                }                                                                                                                                                                                                                                               
+                                            ]
+                                        },                                                                                                                           
+                                        {
+                                            "ruleId": "942210",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": ".AspNetCore"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "code"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "session_state"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "ai_session"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_uf_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_tabs_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_hb_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "incap_"
+                                                }                                                                                                                                                                                                                                                                                                                                                   
+                                            ]
+                                        },
+                                        {
+                                            "ruleId": "942200",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_uf_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_tabs_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "_lr_hb_"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "wm-session-per-user"
+                                                }
+                                            ]
+                                        },                                                                                 
+                                        {
+                                            "ruleId": "942440",
+                                            "enabledState": "Enabled",
+                                            "action": "Log",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "session_state"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "nonce"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "SignInMessage"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": ".AspNetCore"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestBodyPostArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "state"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "AspNetCore.OpenIdConnect.Nonce"
+                                                }                                                                                                
+                                            ]
+                                        },
+                                        {
+                                            "ruleId": "942450",
+                                            "enabledState": "Enabled",
+                                            "action": "Log",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "session_state"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "nonce"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "SignInMessage"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": ".AspNetCore"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestBodyPostArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "state"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "AspNetCore.OpenIdConnect.Nonce"
+                                                }                                                 
+                                            ]
+                                        },
+                                        {
+                                            "ruleId": "942430",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "session_state"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "nonce"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "SignInMessage"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": ".AspNetCore"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestBodyPostArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "state"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "AspNetCore.OpenIdConnect.Nonce"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "projectKeys"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "ReturnUrl"
+                                                },
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "code"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestBodyPostArgNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "ReturnUrl"
+                                                }                                                 
+                                            ]
+                                        }                                                                              
+                                    ],
+                                    "exclusions": []
+                                },
+                                {
+                                    "ruleGroupName": "RFI",
+                                    "rules": [
+                                        {
+                                            "ruleId": "931130",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "redirect_uri"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestBodyPostArgNames",
+                                                    "selectorMatchOperator": "Contains",
+                                                    "selector": "redirect_uri"
+                                                }                                                                                              
+                                            ]
+                                        }
+                                    ],
+                                    "exclusions": []
+                                },
+                                {
+                                    "ruleGroupName": "LFI",
+                                    "rules": [
+                                        {
+                                            "ruleId": "930120",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "QueryStringArgNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "session_state"
+                                                }                                                                                                                                                                                                                                             
+                                            ]                                            
+                                        }                                          
+                                    ],
+                                    "exclusions": []                                
+                                },
+                                {
+                                    "ruleGroupName": "RCE",
+                                    "rules": [
+                                        {
+                                            "ruleId": "932150",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "ai_session"
+                                                },
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "Equals",
+                                                    "selector": "ai_user"
+                                                }                                                                                                                                                                                                                                                                                             
+                                            ]
+                                        }                                         
+                                    ]
+                                },
+                                {
+                                    "ruleGroupName": "XSS",
+                                    "rules": [
+                                        {
+                                            "ruleId": "941120",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "incap_ses_"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "ruleId": "941100",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "incap_ses_"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "ruleId": "941150",
+                                            "enabledState": "Enabled",
+                                            "action": "Block",
+                                            "exclusions": [
+                                                {
+                                                    "matchVariable": "RequestCookieNames",
+                                                    "selectorMatchOperator": "StartsWith",
+                                                    "selector": "incap_ses_"
+                                                }
+                                            ]
+                                        }                                                                                
+                                    ],
+                                    "exclusions": []
+                                }                                
+                            ],
+                            "exclusions": []
+                        },
+                        {
+                            "ruleSetType": "Microsoft_BotManagerRuleSet",
+                            "ruleSetVersion": "1.0",
+                            "ruleGroupOverrides": [],
+                            "exclusions": []
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

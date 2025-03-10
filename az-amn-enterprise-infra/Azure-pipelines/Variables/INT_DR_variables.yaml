@@ -1,0 +1,7 @@
+variables:
+  AMN_HUB_ResourceGroupName: 'amn-wcus-hub-rg-i01'
+  Azure_Resource_Manager_connection : 'AMN_shared_PROD'
+  environment : 'INT_DR'
+  location : 'west central us'
+  Subscription : '06ab2c80-382c-478f-bcd5-5e1afe984092'
+  Template_Path : '/Artifacts/ARM/Infrastructure'

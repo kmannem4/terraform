@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "value": "amn-wus2-hub-apim-td01"
+        },
+        "location": {
+            "value": "westus2"
+        },
+        "additionallocation": {
+            "value": "westcentralus"
+        },
+        "virtualNetworkName": {
+            "value": "amn-wus2-hub-vnet-td01"
+        },
+        "subnetname": {
+            "value": "amn-hub-apim-sn"
+        },
+        "dr_vnet_ResourceGroupName": {
+            "value": "amn-wcus-hub-rg-td01"
+        },
+        "dr_virtualNetworkName": {
+            "value": "amn-wcus-hub-vnet-td01"
+        },
+        "dr_subnetname": {
+            "value": "amn-hub-apim-sn"
+        },
+        "adminEmail": {
+            "value": "Karthik.Mannem@shiftwise.com"
+        },
+        "orgName": {
+            "value": "amnhealthcare"
+        },
+        "tier": {
+            "value": "Developer"
+        },
+        "loggerName": {
+            "value": "amn-wus2-hub-appinsights-td01"
+        },
+        "appinsightsname": {
+            "value": "amn-wus2-hub-appinsights-td01"
+        },
+        "capacity": {
+            "value": 1
+        }
+    }
+}

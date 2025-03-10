@@ -1,0 +1,84 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "value": "amn-wus2-hub-apim-td01"
+        },
+        "AMN_HUB_serverFarmResourceGroup": {
+            "value": "amn-wus2-hub-rg-d01"
+        },
+        "AMN_HUB_KeyVaultName": {
+            "value": "amn-wus2-hub-kv-d01"
+        },
+        "location": {
+            "value": "westus2"
+        },
+        "additionallocation": {
+            "value": "westcentralus"
+        },
+        "virtualNetworkName": {
+            "value": "amn-wus2-hub-vnet-td01"
+        },
+        "subnetname": {
+            "value": "amn-hub-apim-sn"
+        },
+        "dr_vnet_ResourceGroupName": {
+            "value": "amn-wcus-hub-rg-td01"
+        },
+        "dr_virtualNetworkName": {
+            "value": "amn-wcus-hub-vnet-td01"
+        },
+        "dr_subnetname": {
+            "value": "amn-hub-apim-sn"
+        },
+        "api_developer_dns": {
+            "value": "td-api-developer.dev.amnhealthcare.io"
+        },
+        "api_management_dns": {
+            "value": "td-api-management.dev.amnhealthcare.io"
+        },
+        "atsdns": {
+            "value": "td-ats-api.dev.amnhealthcare.io"
+        },
+        "apidns": {
+            "value": "td-api.dev.amnhealthcare.io"
+        },
+        "idpdns": {
+            "value": "https://td-authenticate.dev.amnhealthcare.io"
+        },
+        "vaultResourceGroupName": {
+            "value": "amn-wus2-hub-rg-d01"
+        },
+        "keyVaultName": {
+            "value": "amn-wus2-hub-kv-d01"
+        },
+        "amnonesslCertNameio": {
+            "value": "wildcard-dev-amnhealthcare-io"
+        },
+        "adminEmail": {
+            "value": "Karthik.Mannem@shiftwise.com"
+        },
+        "orgName": {
+            "value": "amnhealthcare"
+        },
+        "tier": {
+            "value": "Developer"
+        },
+        "loggerName": {
+            "value": "amn-wus2-hub-appinsights-td01"
+        },
+        "appinsightsname": {
+            "value": "amn-wus2-hub-appinsights-td01"
+        },
+        "resourceid": {
+            "value": "/subscriptions/43c5a646-c00c-4c59-a332-df854c5dd08c/resourcegroups/co-wus2-enterprisemonitor-rg-s01/providers/microsoft.operationalinsights/workspaces/amn-co-wus2-enterprisemonitor-loga-d01"
+        },
+          "settingName": {
+            "value": "amn-hub-apim-diagset-td01"
+        },
+        "capacity": {
+            "value": 1
+        }
+    }
+}

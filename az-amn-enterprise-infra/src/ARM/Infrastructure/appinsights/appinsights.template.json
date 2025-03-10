@@ -1,0 +1,46 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "insightsname": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      },
+      "regionId": {
+        "type": "string"
+      },
+      "tagsArray": {
+        "type": "object"
+      },
+      "requestSource": {
+        "type": "string"
+      },
+      "AMN_SharedServices_subscriptionId": {
+        "type": "string"
+      },
+      "AMN_SharedServices_ResourceGroup": {
+        "type": "string"
+      },
+      "AMN_SharedServices_loganalyticsworkspace": {
+        "type": "string"
+      }
+    },
+    "resources": [
+      {
+        "name": "[parameters('insightsname')]",
+        "type": "microsoft.insights/components",
+        "location": "[parameters('regionId')]",
+        "tags": "[parameters('tagsArray')]",
+        "apiVersion": "2020-02-02",
+        "properties": {
+          "ApplicationId": "[parameters('insightsname')]",
+          "Application_Type": "[parameters('type')]",
+          "Flow_Type": "Redfield",
+          "Request_Source": "[parameters('requestSource')]",
+          "WorkspaceResourceId": "[concat('/subscriptions/', parameters('AMN_SharedServices_subscriptionId'),'/resourcegroups/', parameters('AMN_SharedServices_ResourceGroup'), '/providers/microsoft.operationalinsights/workspaces/', parameters('AMN_SharedServices_loganalyticsworkspace'))]"
+        }
+      }
+    ]
+  }

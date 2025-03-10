@@ -1,0 +1,45 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apimname": {
+            "type": "string"
+        },
+        "ttmRateLimitCalls": {
+            "type": "int"
+        },
+        "ttmRateLimitEnabled": {
+            "type": "bool"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/ttm-rate-limit-enabled')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "displayName": "ttm-rate-limit-enabled",
+                "value": "[parameters('ttmRateLimitEnabled')]",
+                "tags": [],
+                "secret": false
+            }
+        },
+        {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2021-08-01",
+            "name": "[concat(parameters('apimname'), '/ttm-rate-limit-calls')]",
+            "dependsOn": [
+            ],
+            "properties": {
+                "displayName": "ttm-rate-limit-calls",
+                "value": "[parameters('ttmRateLimitCalls')]",
+                "tags": [],
+                "secret": false
+            }
+        }
+    ]
+}

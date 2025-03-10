@@ -1,0 +1,34 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "apim_public_ip_name": {
+            "value": "amn-wus2-hub-apim-pip-d02"
+        },
+        "apim_public_ip_sku": {
+            "value": "Standard"
+        },
+        "environment": {
+            "value": "DEV"
+        },
+        "zones": {
+            "value": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+        "apim_publicIPAllocationMethod": {
+            "value": "Static"
+        },
+        "apim_public_ip_idleTimeoutInMinutes": {
+            "value": 4
+        },
+        "apim_publicIpAddressVersion": {
+            "value": "IPv4"
+        },
+        "location": {
+            "value": "westus2"
+        }
+    }
+}

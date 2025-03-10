@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "PROD"
+    },
+    "servicebus_name": {
+      "value": "amn-wus2-hub-sbns-p01"
+    },
+    "servicebus_autoscalename": {
+      "value": "amn-wus2-hub-sbns-p01-autoscale"
+    },
+    "AMN_HUB_subscriptionId": {
+      "value": "06ab2c80-382c-478f-bcd5-5e1afe984092"
+    },
+    "AMN_HUB_ResourceGroupName": {
+      "value": "amn-wus2-hub-rg-p01"
+    },
+    "location": {
+      "value": "westus2"
+    },
+    "DR_location": {
+      "value": "westcentralus"
+    },
+    "servicebusautoscale_minCapacity": {
+      "value": "1"
+    },
+    "servicebusautoscale_maxCapacity": {
+      "value": "4"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "product": "Platform Services",
+        "environment": "PROD",
+        "managed-by": "cloud.engineers@amnhealthcare.com"
+      }
+    }
+  }
+}

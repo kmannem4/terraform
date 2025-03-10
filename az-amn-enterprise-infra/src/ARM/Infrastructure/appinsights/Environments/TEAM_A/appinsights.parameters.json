@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "type": {
+      "value": "web"
+    },
+    "insightsname": {
+      "value": "amn-wus2-hub-appinsights-ta01"
+    },
+    "regionId": {
+      "value": "westus2"
+    },
+    "tagsArray": {
+      "value": {
+        "charge-to": "101-71200-5000-9500",
+        "managed-by": "cloud.engineers@amnhealthcare.com",
+        "product": "infrastructure",
+        "environment": "team-a"
+      }
+    },
+    "requestSource": {
+      "value": "IbizaAIExtension"
+    },
+    "AMN_SharedServices_subscriptionId": {
+      "value": "43c5a646-c00c-4c59-a332-df854c5dd08c"
+    },
+    "AMN_SharedServices_ResourceGroup": {
+      "value": "co-wus2-enterprisemonitor-rg-s01"
+    },
+    "AMN_SharedServices_loganalyticsworkspace": {
+      "value": "amn-co-wus2-enterprisemonitor-loga-d01"
+    }
+  }
+}
